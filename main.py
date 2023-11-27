@@ -1,34 +1,23 @@
-from google.cloud import vision
-import io
+from ocr import detect_text
+from text_extraction import extract_info
 
-def detect_text(path):
-    """Detects text in the file."""
-    client = vision.ImageAnnotatorClient()
+def save_to_file(info, file_name):
+    """將提取的信息保存到文件"""
+    with open(file_name, 'w', encoding='utf-8') as file:
+        for key, value in info.items():
+            file.write(f'{key},{value}\n')
 
-    with io.open(path, 'rb') as image_file:
-        content = image_file.read()
+def read_from_file(file_name):
+    """從文件中讀取内容並返回字符串"""
+    with open(file_name, 'r', encoding='utf-8') as file:
+        return file.read()
 
-    image = vision.Image(content=content)
+def main():
+    # 主程序邏輯
+    # text_detected = detect_text('data\基本資料_16325089.jpg')
+    text_detected = read_from_file('old.txt')
+    extracted_info = extract_info(text_detected)
+    save_to_file(extracted_info, 'output.txt')
 
-    response = client.text_detection(image=image)
-    texts = response.text_annotations
-    print('Texts:')
-
-    for text in texts:
-        print('\n"{}"'.format(text.description))
-
-    if response.error.message:
-        raise Exception(
-            '{}\nFor more info on error messages, check: '
-            'https://cloud.google.com/apis/design/errors'.format(
-                response.error.message))
-
-    return texts[0].description if texts else ''
-
-def save_text_to_file(text, file_name):
-    with open(file_name, 'w') as file:
-        file.write(text)
-
-# 使用示例
-text_detected = detect_text('data\基本資料_16325089.jpg')
-save_text_to_file(text_detected, 'output.txt')
+if __name__ == "__main__":
+    main()

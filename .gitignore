@@ -1,5 +1,5 @@
 /data
 /temp
 service-account-file.json
-output.txt
-
+*.txt
+__pycache__/
