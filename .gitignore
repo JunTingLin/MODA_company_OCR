@@ -3,4 +3,5 @@
 service-account-file.json
 *.txt
 *.pdf
+*.json
 __pycache__/
