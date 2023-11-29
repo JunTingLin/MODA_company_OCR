@@ -2,4 +2,5 @@
 /temp
 service-account-file.json
 *.txt
+*.pdf
 __pycache__/

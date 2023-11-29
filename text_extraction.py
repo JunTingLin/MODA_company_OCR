@@ -27,6 +27,15 @@ def extract_info(text,filename):
             info['營業人名稱'] = company_name
         else:
             info['營業人名稱'] = 'Not match'
+    elif "403" in text:
+        info['表格類型'] = '403表'
+        info['統一編號'] = unified_number.group() if unified_number else 'Not match'
+        if company_name_match:
+            company_name_segment = company_name_match.group()
+            company_name = company_name_segment.split()[-1]
+            info['營業人名稱'] = company_name
+        else:
+            info['營業人名稱'] = 'Not match'
 
     return info
 
