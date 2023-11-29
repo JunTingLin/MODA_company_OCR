@@ -10,34 +10,35 @@ def save_to_file(info, file_name):
         file.write('\n')  # 在每個條目之間添加一個空行
 
 def process_directory(directory_path):
-    """处理指定文件夹内的所有图片"""
+    """處理指定文件夾內的所有圖片"""
     last_unified_number = None
     combined_text = ""
-    files = sorted(os.listdir(directory_path))  # 將文件進行排序，確保順序
+    combined_filenames = ""
+    files = sorted(os.listdir(directory_path))  # 對文件進行排序，確保順序
 
     for filename in files:
-        if filename.lower().endswith(('.png', '.jpg', '.jpeg')):  # 檢查是否為圖片檔案
+        print(f'Processing {filename}...')
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
             file_path = os.path.join(directory_path, filename)
             text_detected = detect_text_from_picture(file_path)
-            unified_number = extract_unified_number(text_detected)
+            current_unified_number = extract_unified_number(text_detected)
 
-            # 檢查是否屬於同一家公司
-            if unified_number == last_unified_number or not unified_number:
+            if current_unified_number == last_unified_number or not current_unified_number:
                 combined_text += text_detected + '\n'
+                combined_filenames += filename + ","
             else:
                 if combined_text:
-                    extracted_info = extract_info(combined_text)
+                    extracted_info = extract_info(combined_text, combined_filenames.rstrip(','))
                     save_to_file(extracted_info, 'output.txt')
                 combined_text = text_detected + '\n'
+                combined_filenames = filename + ","
 
-            last_unified_number = unified_number or last_unified_number
+            last_unified_number = current_unified_number or last_unified_number
 
-    # 处理最后一组文本
+    # 處理最後一組文本
     if combined_text:
-        extracted_info = extract_info(combined_text)
+        extracted_info = extract_info(combined_text, combined_filenames.rstrip(','))
         save_to_file(extracted_info, 'output.txt')
-
-
 
 
 def main():
