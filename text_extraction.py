@@ -16,3 +16,9 @@ def extract_info(text):
     info['所營事業資料'] = ','.join(business_data) if business_data else 'Not match'
 
     return info
+
+def extract_unified_number(text):
+    """提取統一編"""
+    unified_number_pattern = r"\b\d{8}\b"
+    match = re.search(unified_number_pattern, text)
+    return match.group() if match else None
