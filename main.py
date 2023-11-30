@@ -1,26 +1,17 @@
 import os
 import re
-import fitz  # PyMuPDF
-import shutil # 用於刪除資料夾
-import json
 from ocr import detect_text_from_picture
 from text_extraction import extract_info, extract_unified_number
+from pdf_processing import convert_pdf_to_images
+from file_management import clear_directory, organize_images_by_unified_number
+from data_storage import save_to_json
 
-def save_to_json(data, file_name):
-    """將提取的信息以 JSON 格式保存"""
-    with open(file_name, 'w', encoding='utf-8') as file:
-        json.dump(data, file, ensure_ascii=False, indent=4)
 
 def numerical_sort(filename):
     """提取檔案名稱中的數字用於排序"""
     numbers = re.findall(r'\d+', filename)
     return int(numbers[0]) if numbers else 0
 
-def clear_directory(directory_path):
-    """清空指定資料夾中的所有文件"""
-    if os.path.exists(directory_path):
-        shutil.rmtree(directory_path)
-    os.makedirs(directory_path)
 
 def process_directory(directory_path):
     """處理指定文件夾內的所有圖片"""
@@ -29,10 +20,10 @@ def process_directory(directory_path):
     combined_filenames = ""
     files = sorted(os.listdir(directory_path), key=numerical_sort) # 使用自定義排序函數對文件進行排序
 
-    data = []  # 用于收集所有数据的列表
+    data = []  # 用於收集所有數據的列表
 
     for filename in files:
-        print(f'Processing {filename}...')
+        print(f'辨識和擷取 {filename}...')
         if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
             file_path = os.path.join(directory_path, filename)
             text_detected = detect_text_from_picture(file_path)
@@ -57,43 +48,6 @@ def process_directory(directory_path):
 
     return data
 
-def convert_pdf_to_images(pdf_path, output_folder, dpi=300):
-    """將 PDF 文件中的每頁轉換為圖片並儲存"""
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
-
-    with fitz.open(pdf_path) as doc:
-        zoom = dpi / 72  # 将 DPI 转换为 fitz 的缩放因子
-        mat = fitz.Matrix(zoom, zoom)
-
-        for page_num in range(len(doc)):
-            page = doc.load_page(page_num)  # 加載頁面
-            pix = page.get_pixmap(matrix=mat)  # 獲取頁面的像素映射，应用缩放因子
-            output_file = f'{output_folder}/page_{page_num + 1}.png'
-            pix.save(output_file)
-
-def organize_images_by_unified_number(json_file, source_folder):
-    """根據統一編號組織圖片"""
-    with open(json_file, 'r', encoding='utf-8') as file:
-        data = json.load(file)
-
-    for entry in data:
-        unified_number = entry.get("統一編號")
-        if not unified_number or unified_number == "Not match":
-            continue
-        filenames = entry.get("檔名", "")
-        if not filenames:
-            continue
-        filenames = filenames.split(",")
-
-        target_folder = os.path.join(source_folder, unified_number)
-        os.makedirs(target_folder, exist_ok=True)
-
-        for filename in filenames:
-            source_path = os.path.join(source_folder, filename)
-            target_path = os.path.join(target_folder, filename)
-            if os.path.exists(source_path):  # 確保文件存在
-                shutil.move(source_path, target_path)
 
 def main():
     open('output.json', 'w').close()  # 清空先前的 output.json 文件
