@@ -4,7 +4,8 @@ from ocr import detect_text_from_picture
 from text_extraction import extract_info, extract_unified_number
 from pdf_processing import convert_pdf_to_images
 from file_management import clear_directory, organize_images_by_unified_number
-from data_storage import save_to_json
+from data_processing import save_to_json
+from data_processing import load_business_code_mapping, add_business_description_to_data
 
 
 def numerical_sort(filename):
@@ -49,6 +50,8 @@ def process_directory(directory_path):
     return data
 
 
+
+
 def main():
     open('output.json', 'w').close()  # 清空先前的 output.json 文件
     pdf_path = 'scan_test.pdf'  # 替換為您的 PDF 文件路徑
@@ -56,8 +59,10 @@ def main():
 
     clear_directory(directory_path)  # 清空 data 資料夾
     convert_pdf_to_images(pdf_path, directory_path, dpi=300)  # 指定 DPI
+    business_code_mapping = load_business_code_mapping('公司行號營業項目代碼表.csv')
     processed_data = process_directory(directory_path)
-    save_to_json(processed_data, 'output.json')
+    processed_data_with_desc = add_business_description_to_data(processed_data, business_code_mapping)
+    save_to_json(processed_data_with_desc, 'output.json')
     organize_images_by_unified_number('output.json', directory_path)
 
 if __name__ == "__main__":
