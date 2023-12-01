@@ -1,5 +1,6 @@
 import json
 import csv
+import requests
 
 
 def save_to_json(data, file_name):
@@ -27,3 +28,47 @@ def add_business_description_to_data(json_data, mapping):
             entry["營業項目"] = ','.join(descriptions)
     return json_data
 
+
+def generate_summary(input_json_path):
+    with open(input_json_path, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+
+    company_summary = {}
+
+    for entry in data:
+        # 獲取每筆資料的統一編號
+        unified_number = entry.get("統一編號")
+        # 獲取每筆資料的公司名稱，如果沒有找到則預設為 "Not match"
+        company_name = entry.get("公司名稱", "Not match").strip()
+
+        # 檢查統一編號是否已經存在於摘要字典中
+        if unified_number not in company_summary:
+            # 如果不存在，則新增一個新的摘要記錄
+            company_summary[unified_number] = {
+                "統一編號": unified_number,
+                "公司名稱": company_name,
+                "allMatch": True  # 設定一個標誌，表示目前為止名稱與編號是匹配的
+            }
+        # 如果該統一編號已存在，檢查名稱是否與已儲存的名稱相符
+        elif company_summary[unified_number]["公司名稱"] != company_name and company_name != "Not match":
+            # 如果不匹配，將 allMatch 標誌設為 False
+            company_summary[unified_number]["allMatch"] = False
+
+    # 將摘要字典轉換成列表並返回
+    return list(company_summary.values())
+
+
+def check_api_data(summary_data):
+    for item in summary_data:
+        unified_number = item['統一編號']
+        print(f"正在比對 {unified_number} 公司的資料是否相符...")
+        response = requests.get(f"https://data.gcis.nat.gov.tw/od/data/api/5F64D864-61CB-4D0D-8AD9-492047CC1EA6?$format=json&$filter=Business_Accounting_NO eq {unified_number}&$skip=0&$top=1")
+        if response.status_code == 200:
+            api_data = response.json()
+            api_company_name = api_data[0]['Company_Name'] if api_data else 'Not match'
+            
+            if api_company_name != 'Not match' and item["公司名稱"] != api_company_name:
+                item["公司名稱"] = api_company_name
+                item["allMatch"] = False
+
+    return summary_data

@@ -11,7 +11,7 @@ def extract_info(text,filename):
     company_name_match = re.search(company_name_pattern, text)
     business_data = re.findall(business_data_pattern, text)
 
-    info['檔名'] = filename  # 添加文件名到信息中
+    info['檔名'] = filename  # 加檔名到資訊中
     if "基本資料" in text:
         info['表格類型'] = '基本資料表'
         info['統一編號'] = unified_number.group() if unified_number else 'Not match'
