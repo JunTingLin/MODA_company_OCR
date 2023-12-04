@@ -40,6 +40,8 @@ def generate_summary(input_json_path):
         unified_number = entry.get("統一編號")
         # 獲取每筆資料的公司名稱，如果沒有找到則預設為 "Not match"
         company_name = entry.get("公司名稱", "Not match").strip()
+        # 獲取每筆資料的負責人姓名，如果沒有找到則預設為 "Not match"
+        representative_name = entry.get("負責人姓名", entry.get("代表人姓名", "Not match")).strip()
 
         # 檢查統一編號是否已經存在於摘要字典中
         if unified_number not in company_summary:
@@ -47,12 +49,19 @@ def generate_summary(input_json_path):
             company_summary[unified_number] = {
                 "統一編號": unified_number,
                 "公司名稱": company_name,
+                "負責人姓名": representative_name,
                 "allMatch": True  # 設定一個標誌，表示目前為止名稱與編號是匹配的
             }
-        # 如果該統一編號已存在，檢查名稱是否與已儲存的名稱相符
-        elif company_summary[unified_number]["公司名稱"] != company_name and company_name != "Not match":
-            # 如果不匹配，將 allMatch 標誌設為 False
-            company_summary[unified_number]["allMatch"] = False
+        else:
+            # 如果該統一編號已存在，檢查名稱是否與已儲存的名稱相符
+            if company_summary[unified_number]["公司名稱"] != company_name and company_name != "Not match":
+                # 如果不匹配，將 allMatch 標誌設為 False
+                company_summary[unified_number]["allMatch"] = False
+            # 檢查負責人姓名是否與已儲存的姓名相符
+            if company_summary[unified_number]["負責人姓名"] != representative_name and representative_name != "Not match":
+                # 如果不匹配，將 allMatch 標誌設為 False
+                company_summary[unified_number]["allMatch"] = False
+            
 
     # 將摘要字典轉換成列表並返回
     return list(company_summary.values())
@@ -66,9 +75,16 @@ def check_api_data(summary_data):
         if response.status_code == 200:
             api_data = response.json()
             api_company_name = api_data[0]['Company_Name'] if api_data else 'Not match'
+            api_responsible_name = api_data[0]['Responsible_Name'] if api_data else 'Not match'
             
+            # 比對公司名稱
             if api_company_name != 'Not match' and item["公司名稱"] != api_company_name:
                 item["公司名稱"] = api_company_name
+                item["allMatch"] = False
+            
+            # 比對負責人姓名
+            if api_responsible_name != 'Not match' and item["負責人姓名"] != api_responsible_name:
+                item["負責人姓名"] = api_responsible_name
                 item["allMatch"] = False
 
     return summary_data

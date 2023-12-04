@@ -60,18 +60,18 @@ def main():
     pdf_path = 'scan_test.pdf'  # 替換為您的 PDF 文件路徑
     directory_path = 'data'  # 輸出圖片的資料夾路徑
 
-    clear_directory(directory_path)  # 清空 data 資料夾
-    convert_pdf_to_images(pdf_path, directory_path, dpi=300)  # 指定 DPI
-    business_code_mapping = load_business_code_mapping('公司行號營業項目代碼表.csv')
-    processed_data = process_directory(directory_path)
-    processed_data_with_desc = add_business_description_to_data(processed_data, business_code_mapping)
-    save_to_json(processed_data_with_desc, 'output.json')
-    organize_images_by_unified_number('output.json', directory_path)
+    # clear_directory(directory_path)  # 清空 data 資料夾
+    # convert_pdf_to_images(pdf_path, directory_path, dpi=300)  # 指定 DPI
+    # business_code_mapping = load_business_code_mapping('公司行號營業項目代碼表.csv')
+    # processed_data = process_directory(directory_path)
+    # processed_data_with_desc = add_business_description_to_data(processed_data, business_code_mapping)
+    # save_to_json(processed_data_with_desc, 'output.json')
+    # organize_images_by_unified_number('output.json', directory_path)
 
     # 生成摘要信息(allMatch)
-    # summary_data = generate_summary('output.json')
-    # summary_data = check_api_data(summary_data)  #去比對每一家公司，假如不一致allMatch改成false，並且公司名稱以api抓回的資料為主
-    # save_to_json(summary_data, 'summary_output.json')
+    summary_data = generate_summary('output.json')
+    summary_data = check_api_data(summary_data)  #去比對每一家公司，假如不一致allMatch改成false，並且公司名稱以api抓回的資料為主
+    save_to_json(summary_data, 'summary_output.json')
 
 if __name__ == "__main__":
     main()
