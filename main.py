@@ -2,8 +2,8 @@ import os
 import re
 from ocr import detect_text_from_picture
 from text_extraction import extract_info, extract_unified_number
-from pdf_processing import convert_pdf_to_images
-from file_management import clear_directory, organize_images_by_unified_number
+from pdf_processing import process_pdf_folder
+from file_management import clear_directory, organize_images_by_unified_number, copy_files_to_output_folder, remove_pdf_files_from_folder
 from data_processing import save_to_json
 from data_processing import load_business_code_mapping, add_business_description_to_data
 from data_processing import generate_summary, check_api_data
@@ -54,24 +54,34 @@ def process_directory(directory_path):
 
 
 def main():
-    # open('output.json', 'w').close()  # 清空先前的 output.json 文件
-    open('summary_output.json', 'w').close()  # 清空先前的 summary_output.json 文件
+    output_folder_path = 'data'  # 替換為您的資料夾路徑
+    file_paths = [
+        'C:\\Users\\junting\\Desktop\\MODA_company_OCR\\temp\\test1\\scan_test.pdf',
+        'C:\\Users\\junting\\Desktop\\MODA_company_OCR\\temp\\test1\\基本資料_16590299_頁面_1.jpg',
+        'C:\\Users\\junting\\Desktop\\MODA_company_OCR\\temp\\test1\\基本資料_16590299_頁面_2.jpg'
+    ]
+    output_json_path = 'output.json'
+    summary_output_json_path = 'summary_output.json'
+    business_code_mapping_file = '公司行號營業項目代碼表.csv'
 
-    pdf_path = 'scan_test.pdf'  # 替換為您的 PDF 文件路徑
-    directory_path = 'data'  # 輸出圖片的資料夾路徑
+    # 先清空輸出資料夾，然後複製文件到輸出資料夾
+    clear_directory(output_folder_path)
+    copy_files_to_output_folder(file_paths, output_folder_path)
+    
+    # 處理資料夾中的所有 PDF 和圖片文件
+    process_pdf_folder(output_folder_path)
+    remove_pdf_files_from_folder(output_folder_path)  # 轉換完畢後刪除 PDF 文件
 
-    # clear_directory(directory_path)  # 清空 data 資料夾
-    # convert_pdf_to_images(pdf_path, directory_path, dpi=300)  # 指定 DPI
-    # business_code_mapping = load_business_code_mapping('公司行號營業項目代碼表.csv')
-    # processed_data = process_directory(directory_path)
-    # processed_data_with_desc = add_business_description_to_data(processed_data, business_code_mapping)
-    # save_to_json(processed_data_with_desc, 'output.json')
-    # organize_images_by_unified_number('output.json', directory_path)
+    business_code_mapping = load_business_code_mapping(business_code_mapping_file)
+    processed_data = process_directory(output_folder_path)
+    processed_data_with_desc = add_business_description_to_data(processed_data, business_code_mapping)
+    save_to_json(processed_data_with_desc, output_json_path)
+    organize_images_by_unified_number(output_json_path, output_folder_path)
 
-    # 生成摘要信息(allMatch)
-    summary_data = generate_summary('output.json')
-    summary_data = check_api_data(summary_data)  #去比對每一家公司，假如不一致allMatch改成false，並且公司名稱以api抓回的資料為主
-    save_to_json(summary_data, 'summary_output.json')
+    summary_data = generate_summary(output_json_path)
+    summary_data = check_api_data(summary_data)
+    save_to_json(summary_data, summary_output_json_path)
+
 
 if __name__ == "__main__":
     main()
