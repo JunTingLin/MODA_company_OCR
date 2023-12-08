@@ -6,9 +6,6 @@ from PySide2.QtUiTools import QUiLoader
 from PySide2.QtCore import QFile
 from worker_threads import WorkerThread
 
-# 匯入其他模組的函數
-from data_processing import load_business_code_mapping, add_business_description_to_data, save_to_json
-from file_management import organize_images_by_unified_number
 
 
 
@@ -85,17 +82,9 @@ class AppWindow(QMainWindow):
         self.worker_thread.update_status.connect(lambda message: self.window.label_status.setText(message))
         self.worker_thread.start()
 
-    def handle_processed_data(self, processed_data):
-
-        # 其他處理步驟
-        business_code_mapping_file = '公司行號營業項目代碼表.csv'
-        business_code_mapping = load_business_code_mapping(business_code_mapping_file)
-
-        processed_data_with_desc = add_business_description_to_data(processed_data, business_code_mapping)
-        save_to_json(processed_data_with_desc, 'output.json')
-        organize_images_by_unified_number('output.json', self.output_folder_path)
-
+    def handle_processed_data(self):
         # 更新進度條到 100% 並顯示完成提示
+        self.window.label_status.setText("處理完成！")
         self.window.progressBar.setValue(100)
         QMessageBox.information(self, "完成", "處理完成！")
 

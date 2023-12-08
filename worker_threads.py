@@ -1,6 +1,8 @@
 from PySide2.QtCore import QThread, Signal
 from pdf_processing import process_pdf_folder
-from file_management import clear_directory, copy_files_to_output_folder, process_directory, remove_pdf_files_from_folder, process_directory
+from file_management import clear_directory, copy_files_to_output_folder, process_directory, remove_pdf_files_from_folder, process_directory,organize_images_by_unified_number
+from data_processing import load_business_code_mapping, add_business_description_to_data, save_to_json
+
 
 
 class WorkerThread(QThread):
@@ -32,7 +34,23 @@ class WorkerThread(QThread):
 
         # 處理圖片文件
         self.update_status.emit("正在處理圖片文件...")
+        self.update_progress.emit(90)
         processed_data = process_directory(self.output_folder_path, self.update_progress, self.update_status)
+
+
+        # 其他處理步驟
+        self.update_status.emit("正在查表...")
+        self.update_progress.emit(95)
+        business_code_mapping_file = '公司行號營業項目代碼表.csv'
+        business_code_mapping = load_business_code_mapping(business_code_mapping_file)
+        processed_data_with_desc = add_business_description_to_data(processed_data, business_code_mapping)
+        
+        # 儲存數據
+        save_to_json(processed_data_with_desc, 'output.json')
+        # 歸檔
+        self.update_status.emit("正在歸檔...")
+        self.update_progress.emit(97)
+        organize_images_by_unified_number('output.json', self.output_folder_path)
 
         # 發射處理完畢的數據
         self.finished_processing.emit(processed_data)

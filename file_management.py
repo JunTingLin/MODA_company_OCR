@@ -64,7 +64,7 @@ def process_directory(directory_path, update_progress=None, update_status=None):
     for index, filename in enumerate(files):
         print(f'辨識和擷取 {filename}...')
         if update_progress and update_status: # 如果傳入了進度更新和狀態更新的信號
-            current_progress = (index + 1) * 100 // len(files)
+            current_progress = (index + 1) * 90 // len(files) # 計算當前進度(最多90%)
             update_progress.emit(current_progress)  # 發射進度更新信號
             update_status.emit(f'辨識和擷取 {filename}...')  # 發射狀態更新信號
 
