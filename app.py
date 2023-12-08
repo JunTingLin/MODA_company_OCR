@@ -4,11 +4,13 @@ import subprocess
 from PySide2.QtWidgets import QApplication, QMainWindow, QFileDialog, QListWidgetItem, QMessageBox
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtCore import QFile
+from worker_threads import WorkerThread
 
 # 匯入其他模組的函數
 from data_processing import load_business_code_mapping, add_business_description_to_data, save_to_json
-from file_management import clear_directory, copy_files_to_output_folder, remove_pdf_files_from_folder, organize_images_by_unified_number, process_directory
-from pdf_processing import process_pdf_folder
+from file_management import organize_images_by_unified_number
+
+
 
 class AppWindow(QMainWindow):
     def __init__(self):
@@ -76,37 +78,25 @@ class AppWindow(QMainWindow):
         file_paths = [self.window.listWidget.item(i).text() for i in range(self.window.listWidget.count())]
         output_folder_path = self.window.lineEdit.text()
 
-        # 清空輸出資料夾並更新進度條
-        clear_directory(output_folder_path)
-        self.window.progressBar.setValue(10)
+        # 初始化並啟動 WorkerThread
+        self.worker_thread = WorkerThread(output_folder_path, file_paths)
+        self.worker_thread.finished_processing.connect(self.handle_processed_data) 
+        self.worker_thread.update_progress.connect(self.window.progressBar.setValue)
+        self.worker_thread.update_status.connect(lambda message: self.window.label_status.setText(message))
+        self.worker_thread.start()
 
-        # 複製文件到輸出資料夾並更新進度條
-        copy_files_to_output_folder(file_paths, output_folder_path)
-        self.window.progressBar.setValue(20)
+    def handle_processed_data(self, processed_data):
 
-        # 處理資料夾中的所有 PDF 和圖片文件並更新進度條
-        process_pdf_folder(output_folder_path)
-        self.window.progressBar.setValue(50)
-
-        # 轉換完畢後刪除 PDF 文件並更新進度條
-        remove_pdf_files_from_folder(output_folder_path)
-        self.window.progressBar.setValue(60)
-
-        # 其他處理步驟並更新進度條
+        # 其他處理步驟
         business_code_mapping_file = '公司行號營業項目代碼表.csv'
         business_code_mapping = load_business_code_mapping(business_code_mapping_file)
-        processed_data = process_directory(output_folder_path)
-        self.window.progressBar.setValue(80)
 
         processed_data_with_desc = add_business_description_to_data(processed_data, business_code_mapping)
         save_to_json(processed_data_with_desc, 'output.json')
-        organize_images_by_unified_number('output.json', output_folder_path)
-        self.window.progressBar.setValue(90)
+        organize_images_by_unified_number('output.json', self.output_folder_path)
 
-        # 完成處理並將進度條設置為滿
+        # 更新進度條到 100% 並顯示完成提示
         self.window.progressBar.setValue(100)
-
-        # 顯示完成提示
         QMessageBox.information(self, "完成", "處理完成！")
 
 

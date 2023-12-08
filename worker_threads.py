@@ -1,0 +1,38 @@
+from PySide2.QtCore import QThread, Signal
+from pdf_processing import process_pdf_folder
+from file_management import clear_directory, copy_files_to_output_folder, process_directory, remove_pdf_files_from_folder, process_directory
+
+
+class WorkerThread(QThread):
+    update_progress = Signal(int)
+    update_status = Signal(str)
+    finished_processing = Signal(list)  # 新增：處理完畢信號，返回數據列表
+
+    def __init__(self, output_folder_path, file_paths):
+        super(WorkerThread, self).__init__()
+        self.output_folder_path = output_folder_path
+        self.file_paths = file_paths
+
+    def run(self):
+        # 清空輸出資料夾
+        self.update_status.emit("正在清空輸出資料夾...")
+        clear_directory(self.output_folder_path)
+
+        # 複製文件到輸出資料夾
+        self.update_status.emit("正在複製文件到輸出資料夾...")
+        copy_files_to_output_folder(self.file_paths, self.output_folder_path)
+
+        # 處理資料夾中的所有 PDF 並轉成圖片
+        self.update_status.emit("正在處理資料夾中的所有 PDF 並轉成圖片...")
+        process_pdf_folder(self.output_folder_path)
+
+        # 刪除 PDF 文件
+        self.update_status.emit("正在刪除 PDF 文件...")
+        remove_pdf_files_from_folder(self.output_folder_path)
+
+        # 處理圖片文件
+        self.update_status.emit("正在處理圖片文件...")
+        processed_data = process_directory(self.output_folder_path, self.update_progress, self.update_status)
+
+        # 發射處理完畢的數據
+        self.finished_processing.emit(processed_data)

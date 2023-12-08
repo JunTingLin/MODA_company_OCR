@@ -52,7 +52,7 @@ def numerical_sort(filename):
     return int(numbers[0]) if numbers else 0
 
 
-def process_directory(directory_path):
+def process_directory(directory_path, update_progress=None, update_status=None):
     """處理指定文件夾內的所有圖片"""
     last_unified_number = None
     combined_text = ""
@@ -61,8 +61,17 @@ def process_directory(directory_path):
 
     data = []  # 用於收集所有數據的列表
 
-    for filename in files:
+    for index, filename in enumerate(files):
         print(f'辨識和擷取 {filename}...')
+        if update_progress and update_status: # 如果傳入了進度更新和狀態更新的信號
+            current_progress = (index + 1) * 100 // len(files)
+            update_progress.emit(current_progress)  # 發射進度更新信號
+            update_status.emit(f'辨識和擷取 {filename}...')  # 發射狀態更新信號
+
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+            file_path = os.path.join(directory_path, filename)
+            text_detected = detect_text_from_picture(file_path)
+
         if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
             file_path = os.path.join(directory_path, filename)
             text_detected = detect_text_from_picture(file_path)
