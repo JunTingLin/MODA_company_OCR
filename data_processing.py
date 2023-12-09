@@ -38,8 +38,8 @@ def generate_summary(input_json_path):
     for entry in data:
         # 獲取每筆資料的統一編號
         unified_number = entry.get("統一編號")
-        # 獲取每筆資料的公司名稱，如果沒有找到則預設為 "Not match"
-        company_name = entry.get("公司名稱", "Not match").strip()
+        # 獲取每筆資料的公司名稱or營業人名稱，如果都沒有找到則預設為 "Not match"
+        company_name = entry.get("公司名稱", entry.get("營業人名稱", "Not match")).strip()
         # 獲取每筆資料的負責人姓名，如果沒有找到則預設為 "Not match"
         representative_name = entry.get("負責人姓名", entry.get("代表人姓名", "Not match")).strip()
 
@@ -54,11 +54,11 @@ def generate_summary(input_json_path):
             }
         else:
             # 如果該統一編號已存在，檢查名稱是否與已儲存的名稱相符
-            if company_summary[unified_number]["公司名稱"] != company_name and company_name != "Not match":
+            if company_summary[unified_number]["公司名稱"] != company_name or company_name == "Not match":
                 # 如果不匹配，將 allMatch 標誌設為 False
                 company_summary[unified_number]["allMatch"] = False
             # 檢查負責人姓名是否與已儲存的姓名相符
-            if company_summary[unified_number]["負責人姓名"] != representative_name and representative_name != "Not match":
+            if company_summary[unified_number]["負責人姓名"] != representative_name or representative_name == "Not match":
                 # 如果不匹配，將 allMatch 標誌設為 False
                 company_summary[unified_number]["allMatch"] = False
             
@@ -83,12 +83,12 @@ def check_api_data(summary_data, update_progress=None, update_status=None):
             api_responsible_name = api_data[0]['Responsible_Name'] if api_data else 'Not match'
             
             # 比對公司名稱
-            if api_company_name != 'Not match' and item["公司名稱"] != api_company_name:
+            if api_company_name == 'Not match' or item["公司名稱"] != api_company_name:
                 item["公司名稱"] = api_company_name
                 item["allMatch"] = False
             
             # 比對負責人姓名
-            if api_responsible_name != 'Not match' and item["負責人姓名"] != api_responsible_name:
+            if api_responsible_name == 'Not match' or item["負責人姓名"] != api_responsible_name:
                 item["負責人姓名"] = api_responsible_name
                 item["allMatch"] = False
 
