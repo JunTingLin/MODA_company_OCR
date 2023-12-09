@@ -7,6 +7,10 @@ import os
 
 
 def main():
+    # 設置 Google 應用認證
+    google_credentials_path = 'service-account-file.json'  # 如果需要，更改為您的文件路徑
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = google_credentials_path
+
     output_folder_path = 'data'  # 替換為您的資料夾路徑
     file_paths = [
         'C:\\Users\\junting\\Desktop\\MODA_company_OCR\\temp\\test1\\scan_test.pdf',

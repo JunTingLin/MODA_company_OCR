@@ -31,6 +31,9 @@ class AppWindow(QMainWindow):
         self.window.button_step1.clicked.connect(self.execute_step1)
         self.window.button_step2.clicked.connect(self.execute_step2)
 
+        # 為選擇金鑰文件的按鈕設置點擊事件
+        self.window.button_choose_key_file.clicked.connect(self.choose_key_file)
+
         self.window.show()
 
     def initialize_ui(self):
@@ -78,6 +81,7 @@ class AppWindow(QMainWindow):
 
         # 初始化並啟動 WorkerThread
         self.worker_thread = WorkerThread(output_folder_path, file_paths)
+        self.worker_thread.error_occurred.connect(self.handle_error)
         self.worker_thread.finished_processing.connect(self.handle_processed_data) 
         self.worker_thread.update_progress.connect(self.window.progressBar.setValue)
         self.worker_thread.update_status.connect(lambda message: self.window.label_status.setText(message))
@@ -98,6 +102,22 @@ class AppWindow(QMainWindow):
         self.window.label_status.setText("處理完成！")
         self.window.progressBar.setValue(100)
         QMessageBox.information(self, "完成", "處理完成！")
+
+    def choose_key_file(self):
+        # 打開文件選擇對話框
+        key_file_path, _ = QFileDialog.getOpenFileName(self, "選擇金鑰文件", "", "JSON 檔案 (*.json)")
+        if key_file_path:
+            # 將文件路徑設置到編輯框
+            self.window.lineEdit_keyfile_path.setText(key_file_path)
+            
+            # 設置環境變數
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = key_file_path
+            print("金鑰文件已設置: " + key_file_path)
+
+    def handle_error(self, error_message):
+        self.window.label_status.setText("發生錯誤！")
+        self.window.progressBar.setValue(0)
+        QMessageBox.critical(self, "錯誤", error_message)
 
 
 

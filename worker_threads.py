@@ -4,6 +4,7 @@ from file_management import clear_directory, copy_files_to_output_folder, proces
 from data_processing import load_business_code_mapping, add_business_description_to_data, save_to_json
 from data_processing import generate_summary, check_api_data
 import os
+import google.auth.exceptions
 
 
 
@@ -12,6 +13,7 @@ class WorkerThread(QThread):
     update_progress = Signal(int)
     update_status = Signal(str)
     finished_processing = Signal(list)  # 新增：處理完畢信號，返回數據列表
+    error_occurred = Signal(str)  # 新增錯誤發生信號
 
     def __init__(self, output_folder_path, file_paths):
         super(WorkerThread, self).__init__()
@@ -19,45 +21,51 @@ class WorkerThread(QThread):
         self.file_paths = file_paths
 
     def run(self):
-        # 清空輸出資料夾
-        self.update_status.emit("正在清空輸出資料夾...")
-        clear_directory(self.output_folder_path)
+        try:
+            # 清空輸出資料夾
+            self.update_status.emit("正在清空輸出資料夾...")
+            clear_directory(self.output_folder_path)
 
-        # 複製文件到輸出資料夾
-        self.update_status.emit("正在複製文件到輸出資料夾...")
-        copy_files_to_output_folder(self.file_paths, self.output_folder_path)
+            # 複製文件到輸出資料夾
+            self.update_status.emit("正在複製文件到輸出資料夾...")
+            copy_files_to_output_folder(self.file_paths, self.output_folder_path)
 
-        # 處理資料夾中的所有 PDF 並轉成圖片
-        self.update_status.emit("正在處理資料夾中的所有 PDF 並轉成圖片...")
-        process_pdf_folder(self.output_folder_path)
+            # 處理資料夾中的所有 PDF 並轉成圖片
+            self.update_status.emit("正在處理資料夾中的所有 PDF 並轉成圖片...")
+            process_pdf_folder(self.output_folder_path)
 
-        # 刪除 PDF 文件
-        self.update_status.emit("正在刪除 PDF 文件...")
-        remove_pdf_files_from_folder(self.output_folder_path)
+            # 刪除 PDF 文件
+            self.update_status.emit("正在刪除 PDF 文件...")
+            remove_pdf_files_from_folder(self.output_folder_path)
 
-        # 處理圖片文件
-        self.update_status.emit("正在處理圖片文件...")
-        self.update_progress.emit(90)
-        processed_data = process_directory(self.output_folder_path, self.update_progress, self.update_status)
+            # 處理圖片文件
+            self.update_status.emit("正在處理圖片文件...")
+            self.update_progress.emit(90)
+            processed_data = process_directory(self.output_folder_path, self.update_progress, self.update_status)
 
 
-        # 其他處理步驟
-        self.update_status.emit("正在查表...")
-        self.update_progress.emit(95)
-        business_code_mapping_file = '公司行號營業項目代碼表.csv'
-        business_code_mapping = load_business_code_mapping(business_code_mapping_file)
-        processed_data_with_desc = add_business_description_to_data(processed_data, business_code_mapping)
-        
-        # 儲存數據
-        output_json_path = os.path.join(self.output_folder_path, 'output.json')
-        save_to_json(processed_data_with_desc, output_json_path)
-        # 歸檔
-        self.update_status.emit("正在歸檔...")
-        self.update_progress.emit(97)
-        organize_images_by_unified_number(output_json_path, self.output_folder_path)
+            # 其他處理步驟
+            self.update_status.emit("正在查表...")
+            self.update_progress.emit(95)
+            business_code_mapping_file = '公司行號營業項目代碼表.csv'
+            business_code_mapping = load_business_code_mapping(business_code_mapping_file)
+            processed_data_with_desc = add_business_description_to_data(processed_data, business_code_mapping)
+            
+            # 儲存數據
+            output_json_path = os.path.join(self.output_folder_path, 'output.json')
+            save_to_json(processed_data_with_desc, output_json_path)
+            # 歸檔
+            self.update_status.emit("正在歸檔...")
+            self.update_progress.emit(97)
+            organize_images_by_unified_number(output_json_path, self.output_folder_path)
 
-        # 發射處理完畢的數據
-        self.finished_processing.emit(processed_data)
+            # 發射處理完畢的數據
+            self.finished_processing.emit(processed_data)
+
+        except Exception as e:
+            self.error_occurred.emit(str(e))  # 發射錯誤信息
+            print(str(e))
+            # 在這裡可以發射一個新的信號來處理這個特定的錯誤情況
     
     def run_step2(self, output_json_path, summary_output_json_path):
         self.update_status.emit("正在生成摘要...")
