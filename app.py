@@ -29,6 +29,7 @@ class AppWindow(QMainWindow):
         self.window.button_choose_output_folder.clicked.connect(self.choose_output_folder)
         self.window.button_open_output_folder.clicked.connect(self.open_output_folder)
         self.window.button_step1.clicked.connect(self.execute_step1)
+        self.window.button_step2.clicked.connect(self.execute_step2)
 
         self.window.show()
 
@@ -82,11 +83,22 @@ class AppWindow(QMainWindow):
         self.worker_thread.update_status.connect(lambda message: self.window.label_status.setText(message))
         self.worker_thread.start()
 
+    def execute_step2(self):
+        output_json_path = os.path.join(self.output_folder_path, 'output.json')
+        summary_output_json_path = os.path.join(self.output_folder_path, 'summary_output.json')
+
+        self.worker_thread = WorkerThread(self.output_folder_path, [])
+        self.worker_thread.finished_processing.connect(self.handle_processed_data)
+        self.worker_thread.update_progress.connect(self.window.progressBar.setValue)
+        self.worker_thread.update_status.connect(lambda message: self.window.label_status.setText(message))
+        self.worker_thread.run_step2(output_json_path, summary_output_json_path)
+
     def handle_processed_data(self):
         # 更新進度條到 100% 並顯示完成提示
         self.window.label_status.setText("處理完成！")
         self.window.progressBar.setValue(100)
         QMessageBox.information(self, "完成", "處理完成！")
+
 
 
 if __name__ == "__main__":

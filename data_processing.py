@@ -67,10 +67,15 @@ def generate_summary(input_json_path):
     return list(company_summary.values())
 
 
-def check_api_data(summary_data):
-    for item in summary_data:
+def check_api_data(summary_data, update_progress=None, update_status=None):
+    for i, item in enumerate(summary_data):
         unified_number = item['統一編號']
         print(f"正在比對 {unified_number} 公司的資料是否相符...")
+        if update_progress and update_status:
+            update_status.emit(f"正在比對 {unified_number} 公司的資料是否相符...")
+            current_progress = (i + 1) * 90 // len(summary_data) # 計算當前進度(最多90%)
+            update_progress.emit(current_progress)
+
         response = requests.get(f"https://data.gcis.nat.gov.tw/od/data/api/5F64D864-61CB-4D0D-8AD9-492047CC1EA6?$format=json&$filter=Business_Accounting_NO eq {unified_number}&$skip=0&$top=1")
         if response.status_code == 200:
             api_data = response.json()

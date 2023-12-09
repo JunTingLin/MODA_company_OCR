@@ -2,6 +2,9 @@ from PySide2.QtCore import QThread, Signal
 from pdf_processing import process_pdf_folder
 from file_management import clear_directory, copy_files_to_output_folder, process_directory, remove_pdf_files_from_folder, process_directory,organize_images_by_unified_number
 from data_processing import load_business_code_mapping, add_business_description_to_data, save_to_json
+from data_processing import generate_summary, check_api_data
+import os
+
 
 
 
@@ -46,11 +49,24 @@ class WorkerThread(QThread):
         processed_data_with_desc = add_business_description_to_data(processed_data, business_code_mapping)
         
         # 儲存數據
-        save_to_json(processed_data_with_desc, 'output.json')
+        output_json_path = os.path.join(self.output_folder_path, 'output.json')
+        save_to_json(processed_data_with_desc, output_json_path)
         # 歸檔
         self.update_status.emit("正在歸檔...")
         self.update_progress.emit(97)
-        organize_images_by_unified_number('output.json', self.output_folder_path)
+        organize_images_by_unified_number(output_json_path, self.output_folder_path)
 
         # 發射處理完畢的數據
         self.finished_processing.emit(processed_data)
+    
+    def run_step2(self, output_json_path, summary_output_json_path):
+        self.update_status.emit("正在生成摘要...")
+        summary_data = generate_summary(output_json_path)
+
+        # 呼叫 check_api_data 並傳遞更新進度和狀態的方法
+        summary_data = check_api_data(summary_data, self.update_progress, self.update_status)
+
+        self.update_status.emit("正在儲存摘要...")
+        save_to_json(summary_data, summary_output_json_path)
+        self.update_progress.emit(100)
+        self.finished_processing.emit(summary_data)
