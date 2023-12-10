@@ -53,45 +53,87 @@ def numerical_sort(filename):
 
 
 def process_directory(directory_path, update_progress=None, update_status=None):
-    """處理指定文件夾內的所有圖片"""
     last_unified_number = None
     combined_text = ""
     combined_filenames = ""
-    files = sorted(os.listdir(directory_path), key=numerical_sort) # 使用自定義排序函數對文件進行排序
+    files = sorted(os.listdir(directory_path), key=numerical_sort)
 
-    data = []  # 用於收集所有數據的列表
+    data = []
+    skip_next = False
 
     for index, filename in enumerate(files):
-        print(f'辨識和擷取 {filename}...')
-        if update_progress and update_status: # 如果傳入了進度更新和狀態更新的信號
-            current_progress = (index + 1) * 90 // len(files) # 計算當前進度(最多90%)
-            update_progress.emit(current_progress)  # 發射進度更新信號
-            update_status.emit(f'辨識和擷取 {filename}...')  # 發射狀態更新信號
+        print(f"正在辨識和擷取 {filename}...")
+        if skip_next:
+            skip_next = False
+            continue
 
-        if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
-            file_path = os.path.join(directory_path, filename)
-            text_detected = detect_text_from_picture(file_path)
+        if update_progress and update_status:
+            current_progress = (index + 1) * 90 // len(files)
+            update_progress.emit(current_progress)
+            update_status.emit(f'辨識和擷取 {filename}...')
 
-        if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
-            file_path = os.path.join(directory_path, filename)
-            text_detected = detect_text_from_picture(file_path)
+        file_path = os.path.join(directory_path, filename)
+        text_detected = detect_text_from_picture(file_path)
+
+        if "公司基本資料" in text_detected:
             current_unified_number = extract_unified_number(text_detected)
-
-            if current_unified_number == last_unified_number or not current_unified_number:
-                combined_text += text_detected + '\n'
-                combined_filenames += filename + ","
+            combined_text += text_detected + '\n'
+            combined_filenames += filename + ","
+            next_file = files[index + 1]
+            next_file_path = os.path.join(directory_path, next_file)
+            next_text_detected = detect_text_from_picture(next_file_path)
+            next_unified_number = extract_unified_number(next_text_detected)
+            if index + 1 < len(files) and (current_unified_number == next_unified_number or not next_unified_number):
+                # 合併下一頁
+                combined_text += next_text_detected + '\n'
+                combined_filenames += next_file + ","
+                skip_next = True
+                extracted_info = extract_info(combined_text, combined_filenames.rstrip(','))
+                data.append(extracted_info)
+                combined_text = ""
+                combined_filenames = ""
             else:
-                if combined_text:
-                    extracted_info = extract_info(combined_text, combined_filenames.rstrip(','))
-                    data.append(extracted_info)  # 添加到数据列表中
-                combined_text = text_detected + '\n'
-                combined_filenames = filename + ","
+                extracted_info = extract_info(combined_text, combined_filenames.rstrip(','))
+                data.append(extracted_info)
+                combined_text = ""
+                combined_filenames = ""
 
-            last_unified_number = current_unified_number or last_unified_number
+        elif "投標廠商聲明書" in text_detected:
+            # 投標廠商聲明書處理邏輯
+            combined_text += text_detected + '\n'
+            combined_filenames += filename + ","
+            if index + 1 < len(files):
+                next_file = files[index + 1]
+                next_file_path = os.path.join(directory_path, next_file)
+                next_text_detected = detect_text_from_picture(next_file_path)
+                combined_text += next_text_detected + '\n'
+                combined_filenames += next_file + ","
+                skip_next = True
+                
+                extracted_info = extract_info(combined_text, combined_filenames.rstrip(','))
+                data.append(extracted_info)
+                combined_text = ""
+                combined_filenames = ""
 
-    # 處理最後一組文本
+        elif "401" in text_detected or "403" in text_detected:
+            # 401和403表僅單頁處理
+            extracted_info = extract_info(text_detected, filename)
+            data.append(extracted_info)
+
+        else:
+            pass
+            # if combined_text:
+            #     # 處理前面累積的文本
+            #     extracted_info = extract_info(combined_text, combined_filenames.rstrip(','))
+            #     data.append(extracted_info)
+            #     combined_text = ""
+            #     combined_filenames = ""
+
+        # last_unified_number = current_unified_number
+
+    # 處理最後一組合併的文本
     if combined_text:
         extracted_info = extract_info(combined_text, combined_filenames.rstrip(','))
-        data.append(extracted_info)  # 添加到数据列表中
+        data.append(extracted_info)
 
     return data

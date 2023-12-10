@@ -13,9 +13,10 @@ def main():
 
     output_folder_path = 'data'  # 替換為您的資料夾路徑
     file_paths = [
-        'C:\\Users\\junting\\Desktop\\MODA_company_OCR\\temp\\test1\\scan_test.pdf',
-        'C:\\Users\\junting\\Desktop\\MODA_company_OCR\\temp\\test1\\基本資料_16590299_頁面_1.jpg',
-        'C:\\Users\\junting\\Desktop\\MODA_company_OCR\\temp\\test1\\基本資料_16590299_頁面_2.jpg'
+        # 'C:\\Users\\junting\\Desktop\\MODA_company_OCR\\temp\\test1\\scan_test.pdf',
+        # 'C:\\Users\\junting\\Desktop\\MODA_company_OCR\\temp\\test1\\基本資料_16590299_頁面_1.jpg',
+        # 'C:\\Users\\junting\\Desktop\\MODA_company_OCR\\temp\\test1\\基本資料_16590299_頁面_2.jpg'
+        'C:\\Users\\junting\\Desktop\\MODA_company_OCR\\temp\\test1\\scan_test_all.pdf'
     ]
     output_json_full_path = os.path.join(output_folder_path, 'output.json')
     summary_output_json_full_path = os.path.join(output_folder_path, 'summary_output.json')
@@ -35,10 +36,10 @@ def main():
     save_to_json(processed_data_with_desc, output_json_full_path)
     organize_images_by_unified_number(output_json_full_path, output_folder_path)
 
-    # 生成摘要並檢查 API 回傳的資料
-    summary_data = generate_summary(output_json_full_path)
-    summary_data = check_api_data(summary_data)
-    save_to_json(summary_data, summary_output_json_full_path)
+    # # 生成摘要並檢查 API 回傳的資料
+    # summary_data = generate_summary(output_json_full_path)
+    # summary_data = check_api_data(summary_data)
+    # save_to_json(summary_data, summary_output_json_full_path)
 
 
 if __name__ == "__main__":

@@ -14,7 +14,11 @@ def extract_info(text,filename):
     business_data = re.findall(business_data_pattern, text)
 
     info['檔名'] = filename  # 加檔名到資訊中
-    if "基本資料" in text:
+
+    if "投標廠商聲明書" in text:
+        info['表格類型'] = '投標廠商聲明書'
+        info['統一編號'] = unified_number.group() if unified_number else 'Not match'
+    elif "基本資料" in text:
         info['表格類型'] = '基本資料表'
         info['統一編號'] = unified_number.group() if unified_number else 'Not match'
         info['公司名稱'] = company_name_match.group().strip() if company_name_match else 'Not match'
