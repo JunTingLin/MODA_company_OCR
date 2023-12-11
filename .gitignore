@@ -1,7 +1,14 @@
 /data
 /temp
+/build
+# distribution
+/dist
 service-account-file.json
 *.txt
 *.pdf
 *.json
 __pycache__/
+*.zip
+*.docx
+*.tmp
+app.spec

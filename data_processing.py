@@ -36,6 +36,10 @@ def generate_summary(input_json_path):
     company_summary = {}
 
     for entry in data:
+        # 投標廠商聲明書不納入統計
+        if entry.get("表格類型") == "投標廠商聲明書":
+            continue
+
         # 獲取每筆資料的統一編號
         unified_number = entry.get("統一編號")
         # 獲取每筆資料的公司名稱or營業人名稱，如果都沒有找到則預設為 "Not match"

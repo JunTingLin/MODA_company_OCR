@@ -36,10 +36,10 @@ def main():
     save_to_json(processed_data_with_desc, output_json_full_path)
     organize_images_by_unified_number(output_json_full_path, output_folder_path)
 
-    # # 生成摘要並檢查 API 回傳的資料
-    # summary_data = generate_summary(output_json_full_path)
-    # summary_data = check_api_data(summary_data)
-    # save_to_json(summary_data, summary_output_json_full_path)
+    # 生成摘要並檢查 API 回傳的資料
+    summary_data = generate_summary(output_json_full_path)
+    summary_data = check_api_data(summary_data)
+    save_to_json(summary_data, summary_output_json_full_path)
 
 
 if __name__ == "__main__":
