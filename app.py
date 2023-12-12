@@ -52,7 +52,7 @@ class AppWindow(QMainWindow):
         self.window.lineEdit.setText(self.output_folder_path)
 
     def choose_file(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "選擇文件", "", "圖片檔案 (*.png *.jpg *.jpeg);;PDF 檔案 (*.pdf)")
+        file_path, _ = QFileDialog.getOpenFileName(self, "選擇文件", "", "所有支持的檔案 (*.png *.jpg *.jpeg *.pdf);;圖片檔案 (*.png *.jpg *.jpeg);;PDF 檔案 (*.pdf)")
         if file_path:
             self.window.listWidget.addItem(file_path)
 

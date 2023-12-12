@@ -7,13 +7,16 @@ def extract_info(text,filename):
     company_name_pattern = r"[^\n]+公司\b"  # 以「公司」结尾的字符串
     representative_pattern = r"\d+\n(.+?)\n(?:新北|臺北|桃園|臺中|臺南|高雄|基隆|新竹|嘉義|苗栗|彰化|南投|雲林|屏東|宜蘭|花蓮|臺東|澎湖|金門|連江)" # 以縣市名稱結尾的字符串
     business_data_pattern = r"\b[A-Za-z][0-9]{6}\b"  # 以英文字母開頭，後面接6個數字
+    year_month_pattern =  r"所屬年月份[:;]\s*(.+?)\n" # 以「所屬年月份」開頭，後面接任意個非「年月日」的字符，最後以「年月日」結尾
 
     unified_number = re.search(unified_number_pattern, text)
     company_name_match = re.search(company_name_pattern, text)
     representative_match = re.search(representative_pattern, text)
     business_data = re.findall(business_data_pattern, text)
+    year_month_match = re.search(year_month_pattern, text)
 
     info['檔名'] = filename  # 加檔名到資訊中
+    info['OCR文字'] = text  # 加入 OCR 辨識結果
 
     if "投標廠商聲明書" in text:
         info['表格類型'] = '投標廠商聲明書'
@@ -36,6 +39,11 @@ def extract_info(text,filename):
             info['營業人名稱'] = 'Not match'
         # 使用 extract_responsible_person_name 函數提取負責人姓名
         info['負責人姓名'] = extract_responsible_person_name(text)
+        if year_month_match:
+            month_info = year_month_match.group(1)
+            info['所屬年月份'] = month_info.strip()
+        else:
+            info['所屬年月份'] = 'Not match'
     elif "403" in text:
         info['表格類型'] = '403表'
         info['統一編號'] = unified_number.group() if unified_number else 'Not match'
@@ -47,6 +55,11 @@ def extract_info(text,filename):
             info['營業人名稱'] = 'Not match'
         # 使用 extract_responsible_person_name 函數提取負責人姓名
         info['負責人姓名'] = extract_responsible_person_name(text)
+        if year_month_match:
+            month_info = year_month_match.group(1)
+            info['所屬年月份'] = month_info.strip()
+        else:
+            info['所屬年月份'] = 'Not match'
 
     return info
 

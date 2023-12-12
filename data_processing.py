@@ -83,6 +83,8 @@ def check_api_data(summary_data, update_progress=None, update_status=None):
         response = requests.get(f"https://data.gcis.nat.gov.tw/od/data/api/5F64D864-61CB-4D0D-8AD9-492047CC1EA6?$format=json&$filter=Business_Accounting_NO eq {unified_number}&$skip=0&$top=1")
         if response.status_code == 200:
             api_data = response.json()
+            item["api資料"] = api_data  # 將 API 回傳的 JSON 資料加入
+
             api_company_name = api_data[0]['Company_Name'] if api_data else 'Not match'
             api_responsible_name = api_data[0]['Responsible_Name'] if api_data else 'Not match'
             
