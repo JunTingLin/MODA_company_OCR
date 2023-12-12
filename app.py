@@ -1,6 +1,7 @@
 import sys
 import os
 import subprocess
+import json
 from PySide2.QtWidgets import QApplication, QMainWindow, QFileDialog, QListWidgetItem, QMessageBox
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtCore import QFile
@@ -22,6 +23,9 @@ class AppWindow(QMainWindow):
 
         # 初始化設置
         self.initialize_ui()
+
+        # 加載先前保存的金鑰文件路徑
+        self.load_key_file_path()
 
         # 設置按鈕的功能
         self.window.button_choose_file.clicked.connect(self.choose_file)
@@ -114,11 +118,30 @@ class AppWindow(QMainWindow):
             os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = key_file_path
             print("金鑰文件已設置: " + key_file_path)
 
+            # 保存金鑰文件路徑
+            self.save_key_file_path(key_file_path)
+
     def handle_error(self, error_message):
         self.window.label_status.setText("發生錯誤！")
         self.window.progressBar.setValue(0)
         QMessageBox.critical(self, "錯誤", error_message)
 
+    def load_key_file_path(self):
+        try:
+            with open('key_file_path.json', 'r') as file:
+                data = json.load(file)
+                key_file_path = data.get('key_file_path')
+                if key_file_path:
+                    self.window.lineEdit_keyfile_path.setText(key_file_path)
+                    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = key_file_path
+                    print("金鑰文件已設置: " + key_file_path)
+        except (FileNotFoundError, json.JSONDecodeError):
+            print("未找到先前的金鑰文件路徑")
+
+    def save_key_file_path(self, path):
+        data = {'key_file_path': path}
+        with open('key_file_path.json', 'w') as file:
+            json.dump(data, file)
 
 
 if __name__ == "__main__":
