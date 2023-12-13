@@ -3,6 +3,7 @@ from file_management import clear_directory, organize_images_by_unified_number, 
 from data_processing import save_to_json
 from data_processing import load_business_code_mapping, add_business_description_to_data
 from data_processing import generate_summary, check_api_data
+from image_processing import auto_rotate_images_in_folder
 import os
 
 
@@ -29,6 +30,8 @@ def main():
     # 處理資料夾中的所有 PDF 和圖片文件
     process_pdf_folder(output_folder_path)
     remove_pdf_files_from_folder(output_folder_path)  # 轉換完畢後刪除 PDF 文件
+
+    auto_rotate_images_in_folder(output_folder_path)  # 自動旋轉圖片
 
     business_code_mapping = load_business_code_mapping(business_code_mapping_file)
     processed_data = process_directory(output_folder_path)

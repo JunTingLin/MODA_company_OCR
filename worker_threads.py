@@ -5,6 +5,7 @@ from data_processing import load_business_code_mapping, add_business_description
 from data_processing import generate_summary, check_api_data
 import os
 import google.auth.exceptions
+from image_processing import auto_rotate_images_in_folder
 
 
 
@@ -37,6 +38,9 @@ class WorkerThread(QThread):
             # 刪除 PDF 文件
             self.update_status.emit("正在刪除 PDF 文件...")
             remove_pdf_files_from_folder(self.output_folder_path)
+
+            # 自動旋轉圖片
+            auto_rotate_images_in_folder(self.output_folder_path)
 
             # 處理圖片文件
             self.update_status.emit("正在處理圖片文件...")
