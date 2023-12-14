@@ -25,31 +25,39 @@ class WorkerThread(QThread):
         try:
             # 清空輸出資料夾
             self.update_status.emit("正在清空輸出資料夾...")
+            print("正在清空輸出資料夾...")
             clear_directory(self.output_folder_path)
 
             # 複製文件到輸出資料夾
             self.update_status.emit("正在複製文件到輸出資料夾...")
+            print("正在複製文件到輸出資料夾...")
             copy_files_to_output_folder(self.file_paths, self.output_folder_path)
 
             # 處理資料夾中的所有 PDF 並轉成圖片
             self.update_status.emit("正在處理資料夾中的所有 PDF 並轉成圖片...")
+            print("正在處理資料夾中的所有 PDF 並轉成圖片...")
             process_pdf_folder(self.output_folder_path)
 
             # 刪除 PDF 文件
             self.update_status.emit("正在刪除 PDF 文件...")
+            print("正在刪除 PDF 文件...")
             remove_pdf_files_from_folder(self.output_folder_path)
 
             # 自動旋轉圖片
-            auto_rotate_images_in_folder(self.output_folder_path)
+            self.update_status.emit("正在自動旋轉圖片...")
+            print("正在自動旋轉圖片...")
+            auto_rotate_images_in_folder(self.output_folder_path, self.update_progress, self.update_status)
 
             # 處理圖片文件
             self.update_status.emit("正在處理圖片文件...")
+            print("正在處理圖片文件...")
             self.update_progress.emit(90)
             processed_data = process_directory(self.output_folder_path, self.update_progress, self.update_status)
 
 
             # 其他處理步驟
             self.update_status.emit("正在查表...")
+            print("正在查表...")
             self.update_progress.emit(95)
             business_code_mapping_file = '公司行號營業項目代碼表.csv'
             business_code_mapping = load_business_code_mapping(business_code_mapping_file)
@@ -60,6 +68,7 @@ class WorkerThread(QThread):
             save_to_json(processed_data_with_desc, output_json_path)
             # 歸檔
             self.update_status.emit("正在歸檔...")
+            print("正在歸檔...")
             self.update_progress.emit(97)
             organize_images_by_unified_number(output_json_path, self.output_folder_path)
 

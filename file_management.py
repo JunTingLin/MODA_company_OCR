@@ -1,9 +1,9 @@
 import os
 import shutil # 用於刪除資料夾
 import json
-import re
 from ocr import detect_text_from_picture
 from text_extraction import extract_info, extract_unified_number
+from utils import numerical_sort
 
 def clear_directory(directory_path):
     """清空指定資料夾中的所有文件"""
@@ -46,11 +46,6 @@ def organize_images_by_unified_number(json_file, source_folder):
             if os.path.exists(source_path):  # 確保文件存在
                 shutil.move(source_path, target_path)
 
-def numerical_sort(filename):
-    """提取檔案名稱中的數字用於排序"""
-    numbers = re.findall(r'\d+', filename)
-    return int(numbers[0]) if numbers else 0
-
 
 def process_directory(directory_path, update_progress=None, update_status=None):
     last_unified_number = None
@@ -79,10 +74,11 @@ def process_directory(directory_path, update_progress=None, update_status=None):
             current_unified_number = extract_unified_number(text_detected)
             combined_text += text_detected + '\n'
             combined_filenames += filename + ","
-            next_file = files[index + 1]
-            next_file_path = os.path.join(directory_path, next_file)
-            next_text_detected = detect_text_from_picture(next_file_path)
-            next_unified_number = extract_unified_number(next_text_detected)
+            if index + 1 < len(files):
+                next_file = files[index + 1]
+                next_file_path = os.path.join(directory_path, next_file)
+                next_text_detected = detect_text_from_picture(next_file_path)
+                next_unified_number = extract_unified_number(next_text_detected)
             if index + 1 < len(files) and (current_unified_number == next_unified_number or not next_unified_number):
                 # 合併下一頁
                 combined_text += next_text_detected + '\n'
