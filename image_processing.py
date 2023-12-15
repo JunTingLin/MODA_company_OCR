@@ -21,13 +21,16 @@ def auto_rotate_images_in_folder(folder_path, update_progress=None, update_statu
             if angle != 0:
                 rotated_image = image.rotate(-angle, expand=True)
                 rotated_image.save(filepath)  # 覆蓋原始圖片或保存為新的文件
+                print(f"已旋轉 {filename}...")
                 if update_status:
                     update_status.emit(f"已旋轉 {filename}...")
             else:
+                print(f"{filename} 無需旋轉...")
                 if update_status:
                     update_status.emit(f"{filename} 無需旋轉...")
 
         except Exception as e:
+            print(f"處理 {filename} 時出錯: {e}")
             if update_status:
                 update_status.emit(f"處理 {filename} 時出錯: {e}")
         

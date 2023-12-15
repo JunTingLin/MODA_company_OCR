@@ -82,12 +82,14 @@ class WorkerThread(QThread):
     
     def run_step2(self, output_json_path, summary_output_json_path):
         self.update_status.emit("正在生成摘要...")
+        print("正在生成摘要...")
         summary_data = generate_summary(output_json_path)
 
         # 呼叫 check_api_data 並傳遞更新進度和狀態的方法
         summary_data = check_api_data(summary_data, self.update_progress, self.update_status)
 
         self.update_status.emit("正在儲存摘要...")
+        print("正在儲存摘要...")
         save_to_json(summary_data, summary_output_json_path)
         self.update_progress.emit(100)
         self.finished_processing.emit(summary_data)

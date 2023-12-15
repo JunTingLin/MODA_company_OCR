@@ -11,6 +11,6 @@ __pycache__/
 *.zip
 *.docx
 *.tmp
-app.spec
+*.spec
 /Tesseract-OCR
 ```
