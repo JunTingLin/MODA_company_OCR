@@ -42,6 +42,9 @@ def generate_summary(input_json_path):
 
         # 獲取每筆資料的統一編號
         unified_number = entry.get("統一編號")
+        # 跳過統一編號為 None 或無效的記錄
+        if not unified_number:
+            continue
         # 獲取每筆資料的公司名稱or營業人名稱，如果都沒有找到則預設為 "Not match"
         company_name = entry.get("公司名稱", entry.get("營業人名稱", "Not match")).strip()
         # 獲取每筆資料的負責人姓名，如果沒有找到則預設為 "Not match"
@@ -74,6 +77,11 @@ def generate_summary(input_json_path):
 def check_api_data(summary_data, update_progress=None, update_status=None):
     for i, item in enumerate(summary_data):
         unified_number = item['統一編號']
+
+        # 如果統一編號為None，則跳過當前迭代
+        if unified_number is None:
+            continue
+
         print(f"正在比對 {unified_number} 公司的資料是否相符...")
         if update_progress and update_status:
             update_status.emit(f"正在比對 {unified_number} 公司的資料是否相符...")

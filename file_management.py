@@ -48,7 +48,6 @@ def organize_images_by_unified_number(json_file, source_folder):
 
 
 def process_directory(directory_path, update_progress=None, update_status=None):
-    last_unified_number = None
     combined_text = ""
     combined_filenames = ""
     files = sorted(os.listdir(directory_path), key=numerical_sort)
@@ -117,13 +116,10 @@ def process_directory(directory_path, update_progress=None, update_status=None):
             data.append(extracted_info)
 
         else:
-            pass
-            # if combined_text:
-            #     # 處理前面累積的文本
-            #     extracted_info = extract_info(combined_text, combined_filenames.rstrip(','))
-            #     data.append(extracted_info)
-            #     combined_text = ""
-            #     combined_filenames = ""
+            # 其他圖片單頁處理(輸出圖片上的文字)
+            extracted_info = extract_info(text_detected, filename)
+            data.append(extracted_info)
+            
 
         # last_unified_number = current_unified_number
 

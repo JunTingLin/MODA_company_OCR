@@ -60,6 +60,8 @@ def extract_info(text,filename):
             info['所屬年月份'] = month_info.strip()
         else:
             info['所屬年月份'] = 'Not match'
+    else:
+        pass
 
     return info
 
