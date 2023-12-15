@@ -4,7 +4,7 @@ def extract_info(text,filename):
     """從文字中提取關鍵信"""
     info = {}
     unified_number_pattern = r"\b\d{8}\b"  # 8個連續數字
-    company_name_pattern = r"[^\n]+公司\b"  # 以「公司」结尾的字符串
+    company_name_pattern = r"[^\w]*(.*?公司)\b"  # 以「公司」結尾的字符串
     representative_pattern = r"\d+\n(.+?)\n(?:新北|臺北|桃園|臺中|臺南|高雄|基隆|新竹|嘉義|苗栗|彰化|南投|雲林|屏東|宜蘭|花蓮|臺東|澎湖|金門|連江)" # 以縣市名稱結尾的字符串
     business_data_pattern = r"\b[A-Za-z][0-9]{6}\b"  # 以英文字母開頭，後面接6個數字
     year_month_pattern =  r"所屬年月份[:;]\s*(.+?)\n" # 以「所屬年月份」開頭，後面接任意個非「年月日」的字符，最後以「年月日」結尾
@@ -24,7 +24,7 @@ def extract_info(text,filename):
     elif "基本資料" in text:
         info['表格類型'] = '基本資料表'
         info['統一編號'] = unified_number.group() if unified_number else 'Not match'
-        info['公司名稱'] = company_name_match.group().strip() if company_name_match else 'Not match'
+        info['公司名稱'] = company_name_match.group(1).strip() if company_name_match else 'Not match'
         info['代表人姓名'] = representative_match.group(1).strip() if representative_match else 'Not match'
         info['所營事業資料'] = ','.join(business_data) if business_data else 'Not match'
     elif "401" in text:
@@ -32,9 +32,7 @@ def extract_info(text,filename):
         info['統一編號'] = unified_number.group() if unified_number else 'Not match'
         # 僅對401表，提取公司名稱的特殊邏輯
         if company_name_match:
-            company_name_segment = company_name_match.group()
-            company_name = company_name_segment.split()[-1]
-            info['營業人名稱'] = company_name
+            info['營業人名稱'] = extract_company_name(company_name_match)
         else:
             info['營業人名稱'] = 'Not match'
         # 使用 extract_responsible_person_name 函數提取負責人姓名
@@ -48,9 +46,7 @@ def extract_info(text,filename):
         info['表格類型'] = '403表'
         info['統一編號'] = unified_number.group() if unified_number else 'Not match'
         if company_name_match:
-            company_name_segment = company_name_match.group()
-            company_name = company_name_segment.split()[-1]
-            info['營業人名稱'] = company_name
+            info['營業人名稱'] = extract_company_name(company_name_match)
         else:
             info['營業人名稱'] = 'Not match'
         # 使用 extract_responsible_person_name 函數提取負責人姓名
@@ -101,3 +97,11 @@ def extract_unified_number(text):
     unified_number_pattern = r"\b\d{8}\b"
     match = re.search(unified_number_pattern, text)
     return match.group() if match else None
+
+
+def extract_company_name(company_name_match):
+    company_name = company_name_match.group(1).strip()
+    # 將中文上引號替換為空白
+    company_name = company_name.replace('「', ' ')
+    # 以空白分割並取最後一組
+    return company_name.split()[-1]

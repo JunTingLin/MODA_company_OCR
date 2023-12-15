@@ -83,6 +83,10 @@ class AppWindow(QMainWindow):
         file_paths = [self.window.listWidget.item(i).text() for i in range(self.window.listWidget.count())]
         output_folder_path = self.window.lineEdit.text()
 
+        # 清空列表和進度條
+        self.window.label_status.setText("開始處理...")
+        self.window.progressBar.setValue(0)
+
         # 初始化並啟動 WorkerThread
         self.worker_thread = WorkerThread(output_folder_path, file_paths)
         self.worker_thread.error_occurred.connect(self.handle_error)
@@ -94,6 +98,10 @@ class AppWindow(QMainWindow):
     def execute_step2(self):
         output_json_path = os.path.join(self.output_folder_path, 'output.json')
         summary_output_json_path = os.path.join(self.output_folder_path, 'summary_output.json')
+
+        # 清空列表和進度條
+        self.window.label_status.setText("開始處理...")
+        self.window.progressBar.setValue(0)
 
         self.worker_thread = WorkerThread(self.output_folder_path, [])
         self.worker_thread.finished_processing.connect(self.handle_processed_data)
