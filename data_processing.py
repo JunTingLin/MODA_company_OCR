@@ -43,7 +43,7 @@ def generate_summary(input_json_path):
         # 獲取每筆資料的統一編號
         unified_number = entry.get("統一編號")
         # 跳過統一編號為 None 或無效的記錄
-        if not unified_number:
+        if (not unified_number) or  (unified_number == "Not match") or (len(unified_number) != 8):
             continue
         # 獲取每筆資料的公司名稱or營業人名稱，如果都沒有找到則預設為 "Not match"
         company_name = entry.get("公司名稱", entry.get("營業人名稱", "Not match")).strip()

@@ -78,7 +78,7 @@ def process_directory(directory_path, update_progress=None, update_status=None):
                 next_file_path = os.path.join(directory_path, next_file)
                 next_text_detected = detect_text_from_picture(next_file_path)
                 next_unified_number = extract_unified_number(next_text_detected)
-            if index + 1 < len(files) and (current_unified_number == next_unified_number or not next_unified_number):
+            if index + 1 < len(files) and (current_unified_number == next_unified_number or not next_unified_number) and "數位發展部數位產業署投標廠商聲明書" not in next_text_detected and "營業人銷售額與稅額申報書清單" not in next_text_detected and "營業人銷售額與稅額申報書" not in next_text_detected:
                 # 合併下一頁
                 combined_text += next_text_detected + '\n'
                 combined_filenames += next_file + ","
@@ -93,7 +93,7 @@ def process_directory(directory_path, update_progress=None, update_status=None):
                 combined_text = ""
                 combined_filenames = ""
 
-        elif "投標廠商聲明書" in text_detected:
+        elif "數位發展部數位產業署投標廠商聲明書" in text_detected:
             # 投標廠商聲明書處理邏輯
             combined_text += text_detected + '\n'
             combined_filenames += filename + ","
@@ -110,8 +110,13 @@ def process_directory(directory_path, update_progress=None, update_status=None):
                 combined_text = ""
                 combined_filenames = ""
 
-        elif "401" in text_detected or "403" in text_detected:
-            # 401和403表僅單頁處理
+        elif "401" in text_detected and ("營業人銷售額與稅額申報書清單" in text_detected or "營業人銷售額與稅額申報書" in text_detected):
+            # 401表僅單頁處理
+            extracted_info = extract_info(text_detected, filename)
+            data.append(extracted_info)
+
+        elif "403" in text_detected and "營業人銷售額與稅額申報書" in text_detected :
+            # 403表僅單頁處理
             extracted_info = extract_info(text_detected, filename)
             data.append(extracted_info)
 

@@ -5,7 +5,7 @@ def extract_info(text,filename):
     info = {}
     unified_number_pattern = r"\b\d{8}\b"  # 8個連續數字
     company_name_pattern = r"[^\w]*(.*?公司)\b"  # 以「公司」結尾的字符串
-    representative_pattern = r"\d+\n(.+?)\n(?:新北|臺北|桃園|臺中|臺南|高雄|基隆|新竹|嘉義|苗栗|彰化|南投|雲林|屏東|宜蘭|花蓮|臺東|澎湖|金門|連江)" # 以縣市名稱結尾的字符串
+    representative_pattern = r"\n(.+?)\n(?:新北|臺北|桃園|臺中|臺南|高雄|基隆|新竹|嘉義|苗栗|彰化|南投|雲林|屏東|宜蘭|花蓮|臺東|澎湖|金門|連江)" # 以縣市名稱結尾的字符串
     business_data_pattern = r"\b[A-Za-z][0-9]{6}\b"  # 以英文字母開頭，後面接6個數字
 
     unified_number = re.search(unified_number_pattern, text)
@@ -16,7 +16,7 @@ def extract_info(text,filename):
     info['檔名'] = filename  # 加檔名到資訊中
     info['OCR文字'] = text  # 加入 OCR 辨識結果
 
-    if "投標廠商聲明書" in text:
+    if "數位發展部數位產業署投標廠商聲明書" in text:
         info['表格類型'] = '投標廠商聲明書'
         info['統一編號'] = unified_number.group() if unified_number else 'Not match'
     elif "基本資料" in text:
@@ -25,7 +25,7 @@ def extract_info(text,filename):
         info['公司名稱'] = company_name_match.group(1).strip() if company_name_match else 'Not match'
         info['代表人姓名'] = representative_match.group(1).strip() if representative_match else 'Not match'
         info['所營事業資料'] = ','.join(business_data) if business_data else 'Not match'
-    elif "401" in text:
+    elif "401" in text and ("營業人銷售額與稅額申報書清單" in text or "營業人銷售額與稅額申報書" in text):
         info['表格類型'] = '401表'
         info['統一編號'] = unified_number.group() if unified_number else 'Not match'
         # 僅對401表，提取公司名稱的特殊邏輯
@@ -35,7 +35,7 @@ def extract_info(text,filename):
             info['營業人名稱'] = 'Not match'
         # 使用 extract_responsible_person_name 函數提取負責人姓名
         info['負責人姓名'] = extract_responsible_person_name(text)
-    elif "403" in text:
+    elif "403" and "營業人銷售額與稅額申報書" in text:
         info['表格類型'] = '403表'
         info['統一編號'] = unified_number.group() if unified_number else 'Not match'
         if company_name_match:
@@ -54,6 +54,8 @@ def extract_responsible_person_name(text):
     responsible_person_pattern_1 = r"負責人姓?\s*名?\s+(.+)\n" 
     # 第二種正則表達式
     responsible_person_pattern_2 = r"\b\d{9}\b\n(.+)"
+    # 第三種正則表達式
+    responsible_person_pattern_3 = r"負責人姓名([^\n]+)"
     
     # 嘗試使用第一種正則表達式
     responsible_person_match = re.search(responsible_person_pattern_1, text)
@@ -62,6 +64,10 @@ def extract_responsible_person_name(text):
     
     # 如果第一種正則表達式無效，嘗試第二種
     responsible_person_match = re.search(responsible_person_pattern_2, text)
+    if responsible_person_match and is_valid_name(responsible_person_match.group(1).strip()):
+        return responsible_person_match.group(1).strip()
+    
+    responsible_person_match = re.search(responsible_person_pattern_3, text)
     if responsible_person_match and is_valid_name(responsible_person_match.group(1).strip()):
         return responsible_person_match.group(1).strip()
     
