@@ -52,9 +52,10 @@ class AppWindow(QMainWindow):
         self.window.lineEdit.setText(self.output_folder_path)
 
     def choose_file(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "選擇文件", "", "所有支持的檔案 (*.png *.jpg *.jpeg *.pdf);;圖片檔案 (*.png *.jpg *.jpeg);;PDF 檔案 (*.pdf)")
-        if file_path:
-            self.window.listWidget.addItem(file_path)
+        file_paths, _ = QFileDialog.getOpenFileNames(self, "選擇文件", "", "所有支持的檔案 (*.png *.jpg *.jpeg *.pdf);;圖片檔案 (*.png *.jpg *.jpeg);;PDF 檔案 (*.pdf)")
+        if file_paths:
+            for file_path in file_paths:
+                self.window.listWidget.addItem(file_path)
 
     def remove_file(self):
         selected_item = self.window.listWidget.currentItem()
