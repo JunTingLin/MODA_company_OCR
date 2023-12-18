@@ -89,21 +89,29 @@ def check_api_data(summary_data, update_progress=None, update_status=None):
             update_progress.emit(current_progress)
 
         response = requests.get(f"https://data.gcis.nat.gov.tw/od/data/api/5F64D864-61CB-4D0D-8AD9-492047CC1EA6?$format=json&$filter=Business_Accounting_NO eq {unified_number}&$skip=0&$top=1")
-        if response.status_code == 200:
-            api_data = response.json()
-            item["api資料"] = api_data  # 將 API 回傳的 JSON 資料加入
+        # 如果回傳狀態碼為200且回傳內容不為空
+        if response.status_code == 200 and response.content.strip():
+            try:
+                api_data = response.json()
+                item["api資料"] = api_data  # 將 API 回傳的 JSON 資料加入
 
-            api_company_name = api_data[0]['Company_Name'] if api_data else 'Not match'
-            api_responsible_name = api_data[0]['Responsible_Name'] if api_data else 'Not match'
-            
-            # 比對公司名稱
-            if api_company_name == 'Not match' or item["公司名稱"] != api_company_name:
-                item["公司名稱"] = api_company_name
+                api_company_name = api_data[0]['Company_Name'] if api_data else 'Not match'
+                api_responsible_name = api_data[0]['Responsible_Name'] if api_data else 'Not match'
+                
+                # 比對公司名稱
+                if api_company_name == 'Not match' or item["公司名稱"] != api_company_name:
+                    item["公司名稱"] = api_company_name
+                    item["allMatch"] = False
+        
+                # 比對負責人姓名
+                if api_responsible_name == 'Not match' or item["負責人姓名"] != api_responsible_name:
+                    item["負責人姓名"] = api_responsible_name
+                    item["allMatch"] = False
+            except json.JSONDecodeError:
+                item["api資料"] = "Error in API response"
                 item["allMatch"] = False
-            
-            # 比對負責人姓名
-            if api_responsible_name == 'Not match' or item["負責人姓名"] != api_responsible_name:
-                item["負責人姓名"] = api_responsible_name
-                item["allMatch"] = False
+        else:
+            item["api資料"] = "No data available"
+            item["allMatch"] = False
 
     return summary_data

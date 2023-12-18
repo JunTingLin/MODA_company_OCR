@@ -3,7 +3,7 @@ import re
 def extract_info(text,filename):
     """從文字中提取關鍵信"""
     info = {}
-    unified_number_pattern = r"\b\d{8}\b"  # 8個連續數字
+    unified_number_pattern = r"\b\d{8}\b(?=\n)"  # 8個連續數字，後面跟著換行符但不包含在匹配結果中
     company_name_pattern = r"[^\w]*(.*?公司)\b"  # 以「公司」結尾的字符串
     representative_pattern = r"\n(.+?)\n(?:新北|臺北|桃園|臺中|臺南|高雄|基隆|新竹|嘉義|苗栗|彰化|南投|雲林|屏東|宜蘭|花蓮|臺東|澎湖|金門|連江)" # 以縣市名稱結尾的字符串
     business_data_pattern = r"\b[A-Za-z][0-9]{6}\b"  # 以英文字母開頭，後面接6個數字
