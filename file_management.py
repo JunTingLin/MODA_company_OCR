@@ -69,7 +69,7 @@ def process_directory(directory_path, update_progress=None, update_status=None):
         file_path = os.path.join(directory_path, filename)
         text_detected = detect_text_from_picture(file_path)
 
-        if "公司基本資料" in text_detected:
+        if "公司基本資料" in text_detected and "商工登記公示資料查詢服務" in text_detected:
             current_unified_number = extract_unified_number(text_detected)
             combined_text += text_detected + '\n'
             combined_filenames += filename + ","
@@ -78,7 +78,7 @@ def process_directory(directory_path, update_progress=None, update_status=None):
                 next_file_path = os.path.join(directory_path, next_file)
                 next_text_detected = detect_text_from_picture(next_file_path)
                 next_unified_number = extract_unified_number(next_text_detected)
-            if index + 1 < len(files) and (current_unified_number == next_unified_number or not next_unified_number) and "數位發展部數位產業署投標廠商聲明書" not in next_text_detected and "營業人銷售額與稅額申報書清單" not in next_text_detected and "營業人銷售額與稅額申報書" not in next_text_detected:
+            if index + 1 < len(files) and (current_unified_number == next_unified_number or next_unified_number=='Not match') and "數位發展部數位產業署投標廠商聲明書" not in next_text_detected and "營業人銷售額與稅額申報書清單" not in next_text_detected and "營業人銷售額與稅額申報書" not in next_text_detected:
                 # 合併下一頁
                 combined_text += next_text_detected + '\n'
                 combined_filenames += next_file + ","
