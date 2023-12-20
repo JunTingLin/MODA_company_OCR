@@ -1,5 +1,8 @@
 # MODA_company_OCR
 
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/JunTingLin/MODA_company_OCR)
+
+
 [![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=JunTingLin_MODA_company_OCR)](https://sonarcloud.io/summary/new_code?id=JunTingLin_MODA_company_OCR)
 
 
