@@ -50,14 +50,92 @@
 JSON key file會自動下載到電腦內，一般window都是放在「下載」內
 
 
+## 啟用Cloud Vision API服務
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/9ac52b80-6b57-456d-8983-565a6587fd31)
+
+上面搜索框幫我選Cloud Vision API
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/84b717fb-0dff-41f0-876f-0dbae9479f95)
+
+進入後點選 啟用
+
+## 將此專案綁定帳單帳戶
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/498d29dd-bde3-461b-96cf-f5ca9ee9b602)
+
+側邊攔點選 帳單
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/ee375bbc-794e-4508-bf7a-e8371c62fea1)
+
+這邊將我們的專案綁定到帳單帳戶設定帳戶
+
+綁定後 需稍等5~10分鐘再開始使用程式
+
+## 使用程式-UI版本
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/e34edd0e-32ac-4f33-b27d-bf057a3df992)
+
+將打包的資料夾解壓縮 看到的應該會長這樣，點選app.exe來啟動程式
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/3c090ca7-9ffc-477a-82af-d5b411911bbd)
+
+啟動後請先點選 選擇金鑰檔案 幫我選擇剛剛在GCP下載下來的JSON。
+
+追加: 下此再次啟動程式，會加載上一次的key file 位置
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/a3ee7992-c594-480e-88cc-d4744021ad96)
+
+選擇要辨識的多張圖檔或pdf 檔案，這邊示範選擇一個pdf檔。
+
+追加: 將檔案filter設定*.png *.jpg *.pdf一起，不用分開了
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/c815b6bc-88af-4d09-a51c-edc4405463d4)
+
+假如放錯檔案，也可點選它在按下移除
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/cbb97cc7-d645-43b6-b72e-58cb837df41b)
+
+選擇輸出位置，預設是您使用者桌面下的ocr_result資料夾，會自動幫你建立
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/8a00f0a7-f39f-4efc-b982-490ecc74e2b1)
+
+點選step1按鈕即可使執行辨識和歸檔作業
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/521daa12-6bf1-4bc8-a552-7f4e30d8fbc5)
+
+Step1處理完成 彈出對話框
+
+點選 開啟輸出資料夾按鈕 查看
+
+可以發現各種表格已正確轉向根據統編自動歸檔，並產生output.json
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/a462c789-dc73-4db2-a8c7-69216c94f4af)
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/4b458a99-a469-471d-803e-d6ac013b6e45)
+
+Output.json如上，紀錄每一張(頁)圖檔的擷取結果，多張跨頁也有正常處理。
+
+追加: OCR擷取文字也放入output.json
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/3e82f04d-fb5b-42e1-b3f1-5454a90d64de)
+
+接下來點選step2按鈕
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/2214211c-ed81-4c46-a1d0-557d9990fb14)
+
+跑完之後一樣會出現完成的對話框
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/aea4ffe1-c81b-4643-a4df-9ce123fd76b2)
+
+再次開啟輸出資料夾，可以發現多了一個summary_output.json
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/fa6fc62c-0e71-4451-8dbe-56405b5cf007)
+
+summary_output.json的格式如上，以公司為單位自成一區塊，並且判斷該公司的所有表個和遠端商業司API資料「公司名稱」和「負責人姓名」是否allMatch，假如並非allMatch呈現的內容以遠端API抓到的資料為主。
 
 
-
-
-
-
-
-
+追加: 商業司api回傳也放入summary_output.json
 
 
 # 開發小筆記
