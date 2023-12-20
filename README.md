@@ -1,3 +1,9 @@
+# MODA_company_OCR
+
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=JunTingLin_MODA_company_OCR)](https://sonarcloud.io/summary/new_code?id=JunTingLin_MODA_company_OCR)
+
+
+
 # 專案簡易說明
 
 本程式旨在處理和分析包含「公司基本資料表」、「營業人銷售額與稅額申報書清單(401表)」、「營業人銷售額與稅額申報書(403表)」以及「數位發展部數位產業署投標廠商聲明書」等多種格式的 PDF 文件和圖像檔案。主要功能包括：
