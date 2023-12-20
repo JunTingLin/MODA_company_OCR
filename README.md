@@ -137,6 +137,40 @@ summary_output.json的格式如上，以公司為單位自成一區塊，並且�
 
 追加: 商業司api回傳也放入summary_output.json
 
+## 使用程式-CMD版本
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/0d6c5b2f-fccb-4d41-855d-a4a634e30287)
+
+將打包資料解壓縮，此時您需要將從GCP下載下來的key手動改名成service-account-file.json，並且放置在跟main.exe同一層目錄底下
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/b3808b6c-2ab8-4d58-9546-63fd5a90bcfb)
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/3489803f-c1a1-45c0-9617-1a0e7f804ad7)
+
+在上面的路徑列直接改成cmd並且敲Enter鍵，即會以此路徑開一個新的cmd彈窗，當然您想直接透過cd 指定切換到程式根目錄底下也是可以。
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/f4965bec-ee5d-47ad-ad49-d36f1c950dfe)
+
+確認cmd彈窗是程式目錄底下後，敲擊main，可以發現出現usage使用說明，另外也告知您error，因為使用方式不對
+
+`usage: main [-h] files output_folder`
+
+使用main -h ，可以看到相關help說明告知您如何操作
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/7e2b9c7e-f482-45dd-8bd1-caceeda26487)
+
+main 後面第一個參數接檔案路徑(當有多個檔案需要進行OCR，請使用逗號隔開) 第二個參數接輸出資料夾目錄
+
+`main C:\Users\junting\Desktop\MODA_company_OCR\temp\test1\scan_test.pdf,C:\Users\junting\Desktop\MODA_company_OCR\temp\test1\基本資料_16590299_頁面_1.jpg,C:\Users\junting\Desktop\MODA_company_OCR\temp\test1\基本資料_16590299_頁面_2.jpg C:\Users\junting\Desktop\MODA_company_OCR\data`
+(使用絕對路徑或相對路經均可以被接受)
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/819a0c09-a8c5-4ab7-b9cc-12b89ce2c611)
+
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/40069587-1452-45d4-89de-1f24e1a88f4c)
+
+按下Enter即開始執行，Cmd上面也會條列出現在的進度狀況
+
+
 
 # 開發小筆記
 
