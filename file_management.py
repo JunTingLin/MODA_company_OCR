@@ -4,6 +4,7 @@ import json
 from ocr import detect_text_from_picture
 from text_extraction import extract_info, extract_unified_number
 from utils import numerical_sort
+from checkbox_detector import is_checked
 
 def clear_directory(directory_path):
     """清空指定資料夾中的所有文件"""
@@ -106,6 +107,10 @@ def process_directory(directory_path, update_progress=None, update_status=None):
                 skip_next = True
                 
                 extracted_info = extract_info(combined_text, combined_filenames.rstrip(','))
+                # 調用 is_checked 函數並添加勾選狀況
+                checkbox_status = is_checked(file_path)
+                extracted_info['勾選狀況'] = checkbox_status
+
                 data.append(extracted_info)
                 combined_text = ""
                 combined_filenames = ""
