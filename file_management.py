@@ -1,6 +1,9 @@
 import os
 import shutil # 用於刪除資料夾
 import json
+import random
+import string
+import re
 from ocr import detect_text_from_picture
 from text_extraction import extract_info, extract_unified_number
 from utils import numerical_sort
@@ -46,6 +49,26 @@ def organize_images_by_unified_number(json_file, source_folder):
             target_path = os.path.join(target_folder, filename)
             if os.path.exists(source_path):  # 確保文件存在
                 shutil.move(source_path, target_path)
+
+def remove_or_replace_chinese_characters(directory_path):
+    for filename in os.listdir(directory_path):
+        new_filename = filename
+        if '頁面' in new_filename:
+            new_filename = new_filename.replace('頁面', 'page')
+
+        # 刪除其他中文字符，但保留「頁面」已經被替換成「page」的部分
+        new_filename = re.sub(r'[^\x00-\x7F]+', '', new_filename)
+
+        # 如果檔名變成空的或只有檔案擴展名，則替換為隨機亂碼
+        if new_filename == '' or new_filename.startswith('.'):
+            new_filename = ''.join(random.choices(string.ascii_letters + string.digits, k=6)) + os.path.splitext(filename)[1]
+
+        # 構建完整的舊檔案和新檔案路徑
+        old_file_path = os.path.join(directory_path, filename)
+        new_file_path = os.path.join(directory_path, new_filename)
+
+        # 重新命名檔案
+        os.rename(old_file_path, new_file_path)
 
 
 def process_directory(directory_path, update_progress=None, update_status=None):

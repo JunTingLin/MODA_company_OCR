@@ -1,5 +1,5 @@
 from pdf_processing import process_pdf_folder
-from file_management import clear_directory, organize_images_by_unified_number, copy_files_to_output_folder, remove_pdf_files_from_folder, process_directory
+from file_management import clear_directory, organize_images_by_unified_number, copy_files_to_output_folder, remove_pdf_files_from_folder, process_directory, remove_or_replace_chinese_characters
 from data_processing import save_to_json
 from data_processing import load_business_code_mapping, add_business_description_to_data
 from data_processing import generate_summary, check_api_data
@@ -29,7 +29,9 @@ def main(file_paths, output_folder_path):
     clear_directory(output_folder_path)
     print("正在複製文件到輸出資料夾...")
     copy_files_to_output_folder(file_paths, output_folder_path)
-    
+    print("正在刪除或替換檔案名稱中的中文字符...")
+    remove_or_replace_chinese_characters(output_folder_path)
+
     # 處理資料夾中的所有 PDF 和圖片文件
     print("正在處理資料夾中的所有 PDF 並轉成圖片...")
     process_pdf_folder(output_folder_path)

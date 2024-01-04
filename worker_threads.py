@@ -1,6 +1,6 @@
 from PySide2.QtCore import QThread, Signal
 from pdf_processing import process_pdf_folder
-from file_management import clear_directory, copy_files_to_output_folder, process_directory, remove_pdf_files_from_folder, process_directory,organize_images_by_unified_number
+from file_management import clear_directory, copy_files_to_output_folder, process_directory, remove_pdf_files_from_folder, process_directory,organize_images_by_unified_number, remove_or_replace_chinese_characters
 from data_processing import load_business_code_mapping, add_business_description_to_data, save_to_json
 from data_processing import generate_summary, check_api_data
 import os
@@ -32,6 +32,11 @@ class WorkerThread(QThread):
             self.update_status.emit("正在複製文件到輸出資料夾...")
             print("正在複製文件到輸出資料夾...")
             copy_files_to_output_folder(self.file_paths, self.output_folder_path)
+
+            # 刪除或替換檔案名稱中的中文字符
+            self.update_status.emit("正在刪除或替換檔案名稱中的中文字符...")
+            print("正在刪除或替換檔案名稱中的中文字符...")
+            remove_or_replace_chinese_characters(self.output_folder_path)
 
             # 處理資料夾中的所有 PDF 並轉成圖片
             self.update_status.emit("正在處理資料夾中的所有 PDF 並轉成圖片...")
