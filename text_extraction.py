@@ -31,6 +31,11 @@ def extract_info(text,filename):
             info['營業人名稱'] = 'Not match'
         # 使用 extract_responsible_person_name 函數提取負責人姓名
         info['負責人姓名'] = extract_responsible_person_name(text)
+        # 新增檢查「營業稅網路申報收件章」
+        info['營業稅網路申報收件章'] = '是' if "營業稅網路申報收件章" in text else '否'
+        # 如果是「是」，則提取日期
+        if info['營業稅網路申報收件章'] == '是':
+            info['蓋章日期'] = extract_stamp_date(text)
     elif "403" and "營業人銷售額與稅額申報書" in text:
         info['表格類型'] = '403表'
         info['統一編號'] = extract_unified_number(text)
@@ -40,6 +45,11 @@ def extract_info(text,filename):
             info['營業人名稱'] = 'Not match'
         # 使用 extract_responsible_person_name 函數提取負責人姓名
         info['負責人姓名'] = extract_responsible_person_name(text)
+        # 新增檢查「營業稅網路申報收件章」
+        info['營業稅網路申報收件章'] = '是' if "營業稅網路申報收件章" in text else '否'
+        # 如果是「是」，則提取日期
+        if info['營業稅網路申報收件章'] == '是':
+            info['蓋章日期'] = extract_stamp_date(text)
     else:
         pass
 
@@ -128,3 +138,15 @@ def extract_company_name(company_name_match):
     company_name = company_name.replace('「', ' ')
     # 以空白分割並取最後一組
     return company_name.split()[-1]
+
+def extract_stamp_date(text):
+    """
+    從文本中提取「蓋章日期」。
+
+    :param text: 包含日期的文本
+    :return: 提取到的日期或者「日期未匹配」
+    """
+    # 修改後的日期正則表達式，考慮了日期元素之間可能存在的空格
+    date_pattern = r"\d{3}\s*\.\s*\d{2}\s*\.\s*\d{2}"
+    date_match = re.search(date_pattern, text)
+    return date_match.group(0) if date_match else '日期未匹配'
