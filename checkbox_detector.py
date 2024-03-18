@@ -85,11 +85,9 @@ def process_results(results):
 
     return processed_results
 
-# 使用範例
-image_path = 'C:\\Users\\junting\\Desktop\\MODA_company_OCR\\temp\\checklist_16325089_page_1.jpg'
-# image_path = 'C:\\Users\\junting\\Desktop\\MODA_company_OCR\\temp\\checklist_16590299_page_1.jpg'
-# image_path = 'C:\\Users\\junting\\Desktop\\MODA_company_OCR\\temp\\checklist_70565450_page_1.jpg'
 
-# 獲取最終結果
-# final_results = is_checked(image_path, debug=True)
-# print(final_results)
+if __name__ == "__main__":
+    image_path = r'C:\Users\junting\Desktop\ocr_data\data1\scan_test_all_page_15.jpg'
+
+    results = is_checked(image_path, debug=True)
+    print(results)

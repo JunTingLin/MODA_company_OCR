@@ -138,23 +138,12 @@ def process_directory(directory_path, update_progress=None, update_status=None):
                 combined_text = ""
                 combined_filenames = ""
 
-        elif "401" in text_detected and ("營業人銷售額與稅額申報書清單" in text_detected or "營業人銷售額與稅額申報書" in text_detected):
-            # 401表僅單頁處理
-            extracted_info = extract_info(text_detected, filename)
-            data.append(extracted_info)
-
-        elif "403" in text_detected and "營業人銷售額與稅額申報書" in text_detected :
-            # 403表僅單頁處理
-            extracted_info = extract_info(text_detected, filename)
-            data.append(extracted_info)
-
         else:
-            # 其他圖片單頁處理(輸出圖片上的文字)
+            # 其他表單
             extracted_info = extract_info(text_detected, filename)
             data.append(extracted_info)
             
 
-        # last_unified_number = current_unified_number
 
     # 處理最後一組合併的文本
     if combined_text:

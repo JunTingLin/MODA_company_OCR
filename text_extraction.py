@@ -3,12 +3,6 @@ import re
 def extract_info(text,filename):
     """從文字中提取關鍵信"""
     info = {}
-    company_name_pattern = r"[^\w]*(.*?公司)\b"  # 以「公司」結尾的字符串
-    business_data_pattern = r"\b[A-Za-z][0-9]{6}\b"  # 以英文字母開頭，後面接6個數字
-
-    company_name_match = re.search(company_name_pattern, text)
-    business_data = re.findall(business_data_pattern, text)
-
     info['檔名'] = filename  # 加檔名到資訊中
     info['OCR文字'] = text  # 加入 OCR 辨識結果
 
@@ -18,36 +12,23 @@ def extract_info(text,filename):
     elif "基本資料" in text and "商工登記公示資料查詢服務" in text:
         info['表格類型'] = '基本資料表'
         info['統一編號'] = extract_unified_number(text)
-        info['公司名稱'] = company_name_match.group(1).strip() if company_name_match else 'Not match'
+        info['公司名稱'] = extract_company_name(text)
         info['代表人姓名'] = extract_representative_person_name(text)
-        info['所營事業資料'] = ','.join(business_data) if business_data else 'Not match'
+        info['所營事業資料'] = extract_business_data(text)
     elif "401" in text and ("營業人銷售額與稅額申報書清單" in text or "營業人銷售額與稅額申報書" in text):
         info['表格類型'] = '401表'
         info['統一編號'] = extract_unified_number(text)
-        # 僅對401表，提取公司名稱的特殊邏輯
-        if company_name_match:
-            info['營業人名稱'] = extract_company_name(company_name_match)
-        else:
-            info['營業人名稱'] = 'Not match'
-        # 使用 extract_responsible_person_name 函數提取負責人姓名
+        info['營業人名稱'] = extract_company_name(text)
         info['負責人姓名'] = extract_responsible_person_name(text)
-        # 新增檢查「營業稅網路申報收件章」
         info['營業稅網路申報收件章'] = '是' if "營業稅網路申報收件章" in text else '否'
-        # 如果是「是」，則提取日期
         if info['營業稅網路申報收件章'] == '是':
             info['蓋章日期'] = extract_stamp_date(text)
     elif "403" and "營業人銷售額與稅額申報書" in text:
         info['表格類型'] = '403表'
         info['統一編號'] = extract_unified_number(text)
-        if company_name_match:
-            info['營業人名稱'] = extract_company_name(company_name_match)
-        else:
-            info['營業人名稱'] = 'Not match'
-        # 使用 extract_responsible_person_name 函數提取負責人姓名
+        info['營業人名稱'] = extract_company_name(text)
         info['負責人姓名'] = extract_responsible_person_name(text)
-        # 新增檢查「營業稅網路申報收件章」
         info['營業稅網路申報收件章'] = '是' if "營業稅網路申報收件章" in text else '否'
-        # 如果是「是」，則提取日期
         if info['營業稅網路申報收件章'] == '是':
             info['蓋章日期'] = extract_stamp_date(text)
     else:
@@ -73,6 +54,19 @@ def extract_unified_number(text):
         return unified_number_match.group().strip()
 
     return 'Not match'
+
+def extract_company_name(text):
+    company_name_pattern = r"[^\w]*(.*?公司)\b"  # 以「公司」结尾的字符串
+    company_name_match = re.search(company_name_pattern, text)
+    if company_name_match:
+        return company_name_match.group(1).strip()
+    else:
+        return 'Not match'
+
+def extract_business_data(text):
+    business_data_pattern = r"\b[A-Za-z][0-9]{6}\b"  # 以英文字母開頭，後面接6個數字
+    business_data_match = re.findall(business_data_pattern, text)
+    return ','.join(business_data_match) if business_data_match else 'Not match'
 
 def extract_representative_person_name(text):
     # 第一種正則表達式: # 以縣市名稱結尾的字符串
@@ -132,13 +126,6 @@ def is_valid_name(name):
     return False
 
 
-def extract_company_name(company_name_match):
-    company_name = company_name_match.group(1).strip()
-    # 將中文上引號替換為空白
-    company_name = company_name.replace('「', ' ')
-    # 以空白分割並取最後一組
-    return company_name.split()[-1]
-
 def extract_stamp_date(text):
     """
     從文本中提取「蓋章日期」。
@@ -150,3 +137,10 @@ def extract_stamp_date(text):
     date_pattern = r"\d{3}\s*\.\s*\d{2}\s*\.\s*\d{2}"
     date_match = re.search(date_pattern, text)
     return date_match.group(0) if date_match else '日期未匹配'
+
+
+if __name__ == "__main__":
+    text = ""
+    info = extract_info(text, 'filename')
+    import data_processing
+    data_processing.save_to_json(info, 'debug.json')
