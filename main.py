@@ -54,11 +54,12 @@ def main(file_paths, output_folder_path):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='OCR處理程序')
-    parser.add_argument('files', help='檔案路徑，用逗號分隔')
-    parser.add_argument('output_folder', help='輸出資料夾路徑')
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser(description='OCR處理程序')
+    # parser.add_argument('files', help='檔案路徑，用逗號分隔')
+    # parser.add_argument('output_folder', help='輸出資料夾路徑')
+    # args = parser.parse_args()
 
-    file_paths = args.files.split(',')  # 用逗號分隔檔案路徑
-    output_folder_path = args.output_folder
-    main(file_paths, output_folder_path)
+    # file_paths = args.files.split(',')  # 用逗號分隔檔案路徑
+    # output_folder_path = args.output_folder
+    # main(file_paths, output_folder_path)
+    main([r'C:\Users\junting\Desktop\ocr_data\data1\scan_test_all.pdf'],r'C:\Users\junting\Desktop\ocr_result')

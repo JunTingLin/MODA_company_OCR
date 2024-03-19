@@ -1,9 +1,9 @@
 import re
 
-def extract_info(text,filename):
+def extract_info(text,filenames):
     """從文字中提取關鍵信"""
     info = {}
-    info['檔名'] = filename  # 加檔名到資訊中
+    info['檔名'] = filenames  # 加檔名到資訊中
     info['OCR文字'] = text  # 加入 OCR 辨識結果
 
     if "數位發展部數位產業署投標廠商聲明書" in text:
