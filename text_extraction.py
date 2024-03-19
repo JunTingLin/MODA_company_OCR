@@ -59,7 +59,9 @@ def extract_company_name(text):
     company_name_pattern = r"[^\w]*(.*?公司)\b"  # 以「公司」结尾的字符串
     company_name_match = re.search(company_name_pattern, text)
     if company_name_match:
-        return company_name_match.group(1).strip()
+        company_name = company_name_match.group(1).strip()
+        company_name = company_name.replace("營業名稱", "").replace("營業人名稱", "").strip()
+        return company_name
     else:
         return 'Not match'
 
