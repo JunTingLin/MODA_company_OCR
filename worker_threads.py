@@ -1,7 +1,7 @@
 from PySide2.QtCore import QThread, Signal
 from pdf_processing import process_pdf_folder
-from file_management import clear_directory, copy_files_to_output_folder, process_directory, remove_pdf_files_from_folder, process_directory,organize_images_by_unified_number, remove_or_replace_chinese_characters
-from data_processing import load_business_code_mapping, add_business_description_to_data, save_to_json
+from file_management import clear_directory, copy_files_to_output_folder, remove_pdf_files_from_folder,organize_images_by_unified_number, remove_or_replace_chinese_characters, pure_ocr_to_json, process_data_from_json
+from data_processing import load_business_code_mapping, add_business_description_to_data, save_to_json, add_checkbox_status_to_data
 from data_processing import generate_summary, check_api_data
 import os
 import google.auth.exceptions
@@ -20,6 +20,7 @@ class WorkerThread(QThread):
         super(WorkerThread, self).__init__()
         self.output_folder_path = output_folder_path
         self.file_paths = file_paths
+        self.output_pure_json_path = "pure_ocr_output.json"
 
     def run(self):
         try:
@@ -57,7 +58,10 @@ class WorkerThread(QThread):
             self.update_status.emit("正在處理圖片文件...")
             print("正在處理圖片文件...")
             self.update_progress.emit(90)
-            processed_data = process_directory(self.output_folder_path, self.update_progress, self.update_status)
+            print("正在辨識圖片...")
+            # pure_ocr_to_json(self.output_folder_path, self.output_pure_json_path, self.update_progress, self.update_status)
+            print("正在擷取圖片...")
+            processed_data = process_data_from_json(self.output_pure_json_path, self.update_progress, self.update_status)
 
 
             # 其他處理步驟
@@ -67,10 +71,11 @@ class WorkerThread(QThread):
             business_code_mapping_file = '公司行號營業項目代碼表.csv'
             business_code_mapping = load_business_code_mapping(business_code_mapping_file)
             processed_data_with_desc = add_business_description_to_data(processed_data, business_code_mapping)
+            processed_data_with_checkbox = add_checkbox_status_to_data(processed_data_with_desc, self.output_folder_path)
             
             # 儲存數據
             output_json_path = os.path.join(self.output_folder_path, 'output.json')
-            save_to_json(processed_data_with_desc, output_json_path)
+            save_to_json(processed_data_with_checkbox, output_json_path)
             # 歸檔
             self.update_status.emit("正在歸檔...")
             print("正在歸檔...")

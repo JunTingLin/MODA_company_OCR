@@ -1,6 +1,8 @@
 import json
 import csv
 import requests
+from checkbox_detector import is_checked
+import os
 
 
 def save_to_json(data, file_name):
@@ -26,6 +28,13 @@ def add_business_description_to_data(json_data, mapping):
             codes = entry.get("所營事業資料", "").split(',')
             descriptions = [mapping.get(code, "Not found") for code in codes]
             entry["營業項目"] = ','.join(descriptions)
+    return json_data
+
+def add_checkbox_status_to_data(json_data, directory_path):
+    """向 JSON 數據添加勾選狀況"""
+    for entry in json_data:
+        if entry.get("表格類型") == "投標廠商聲明書":
+            entry["勾選狀況"] = is_checked(os.path.join(directory_path, entry["檔名"][0])) # 僅第一頁
     return json_data
 
 
@@ -85,7 +94,7 @@ def check_api_data(summary_data, update_progress=None, update_status=None):
         print(f"正在比對 {unified_number} 公司的資料是否相符...")
         if update_progress and update_status:
             update_status.emit(f"正在比對 {unified_number} 公司的資料是否相符...")
-            current_progress = (i + 1) * 90 // len(summary_data) # 計算當前進度(最多90%)
+            current_progress = (i + 1) * 100 // len(summary_data)
             update_progress.emit(current_progress)
 
         response = requests.get(f"https://data.gcis.nat.gov.tw/od/data/api/5F64D864-61CB-4D0D-8AD9-492047CC1EA6?$format=json&$filter=Business_Accounting_NO eq {unified_number}&$skip=0&$top=1")

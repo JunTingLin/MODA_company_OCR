@@ -7,7 +7,7 @@ import re
 from ocr import detect_text_from_picture
 from text_extraction import extract_info, extract_unified_number
 from utils import numerical_sort
-from checkbox_detector import is_checked
+from data_processing import save_to_json
 
 def clear_directory(directory_path):
     """清空指定資料夾中的所有文件"""
@@ -70,85 +70,108 @@ def remove_or_replace_chinese_characters(directory_path):
         os.rename(old_file_path, new_file_path)
 
 
-def process_directory(directory_path, update_progress=None, update_status=None):
-    combined_text = ""
-    filenames = []
+def pure_ocr_to_json(directory_path, output_json_path, update_progress=None, update_status=None):
+    """將純文字的OCR結果儲存到JSON檔案"""
     files = sorted(os.listdir(directory_path), key=numerical_sort)
 
     data = []
+    for index, filename in enumerate(files):
+        print(f"正在辨識 {filename}...")
+
+        if update_progress and update_status:
+            current_progress = (index + 1) * 100 // len(files)
+            update_progress.emit(current_progress)
+            update_status.emit(f'正在辨識 {filename}...')
+
+
+        file_path = os.path.join(directory_path, filename)
+        text_detected = detect_text_from_picture(file_path)
+        info = {}
+        info['檔名'] = filename
+        info['OCR文字'] = text_detected
+        data.append(info)
+
+    with open(output_json_path, 'w', encoding='utf-8') as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
+
+
+def process_data_from_json(ocr_json, update_progress=None, update_status=None):
+    with open(ocr_json, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+
+    combined_text = ""
+    filenames = []
+    processed_data = []
     skip_next = False
 
-    for index, filename in enumerate(files):
-        print(f"正在辨識和擷取 {filename}...")
+    for index,entry in enumerate(data):
+        print(f"正在擷取 {entry['檔名']}...")
+
+        if update_progress and update_status:
+            current_progress = (index + 1) * 100 // len(entry['檔名'])
+            update_progress.emit(current_progress)
+            update_status.emit(f"正在擷取 {entry['檔名']}...")
+        
         if skip_next:
             skip_next = False
             continue
 
-        if update_progress and update_status:
-            current_progress = (index + 1) * 90 // len(files)
-            update_progress.emit(current_progress)
-            update_status.emit(f'辨識和擷取 {filename}...')
-
-        file_path = os.path.join(directory_path, filename)
-        text_detected = detect_text_from_picture(file_path)
-
-        if "公司基本資料" in text_detected and "商工登記公示資料查詢服務" in text_detected:
-            current_unified_number = extract_unified_number(text_detected)
-            combined_text += text_detected + '\n'
-            filenames.append(filename)
-            if index + 1 < len(files):
-                next_file = files[index + 1]
-                next_file_path = os.path.join(directory_path, next_file)
-                next_text_detected = detect_text_from_picture(next_file_path)
-                next_unified_number = extract_unified_number(next_text_detected)
-            if index + 1 < len(files) and (current_unified_number == next_unified_number or next_unified_number=='Not match') and "數位發展部數位產業署投標廠商聲明書" not in next_text_detected and "營業人銷售額與稅額申報書清單" not in next_text_detected and "營業人銷售額與稅額申報書" not in next_text_detected:
+        if "公司基本資料" in entry["OCR文字"] and "商工登記公示資料查詢服務" in entry["OCR文字"]:
+            current_unified_number = extract_unified_number(entry["OCR文字"])
+            combined_text += entry["OCR文字"] + '\n'
+            filenames.append(entry["檔名"])
+            if index + 1 < len(data):
+                next_entry = data[index + 1]
+                next_unified_number = extract_unified_number(next_entry["OCR文字"])
+            if index + 1 < len(data) and (current_unified_number == next_unified_number or next_unified_number=='Not match') and "數位發展部數位產業署投標廠商聲明書" not in next_entry["OCR文字"] and "營業人銷售額與稅額申報書清單" not in next_entry["OCR文字"] and "營業人銷售額與稅額申報書" not in next_entry["OCR文字"]:
                 # 合併下一頁
-                combined_text += next_text_detected + '\n'
-                filenames.append(next_file)
+                combined_text += next_entry["OCR文字"] + '\n'
+                filenames.append(next_entry["檔名"])
                 skip_next = True
                 extracted_info = extract_info(combined_text, filenames)
-                data.append(extracted_info)
+                processed_data.append(extracted_info)
                 combined_text = ""
                 filenames = []
             else:
                 extracted_info = extract_info(combined_text, filenames)
-                data.append(extracted_info)
+                processed_data.append(extracted_info)
                 combined_text = ""
                 filenames = []
 
-        elif "數位發展部數位產業署投標廠商聲明書" in text_detected:
+        elif "數位發展部數位產業署投標廠商聲明書" in entry["OCR文字"]:
             # 投標廠商聲明書處理邏輯
-            combined_text += text_detected + '\n'
-            filenames.append(filename)
-            if index + 1 < len(files):
-                next_file = files[index + 1]
-                next_file_path = os.path.join(directory_path, next_file)
-                next_text_detected = detect_text_from_picture(next_file_path)
-                combined_text += next_text_detected + '\n'
-                filenames.append(next_file)
+            combined_text += entry["OCR文字"] + '\n'
+            filenames.append(entry["檔名"])
+            if index + 1 < len(data):
+                next_entry = data[index + 1]
+                combined_text += next_entry["OCR文字"] + '\n'
+                filenames.append(next_entry["檔名"])
                 skip_next = True
-                
                 extracted_info = extract_info(combined_text, filenames)
-                # 調用 is_checked 函數並添加勾選狀況
-                checkbox_status = is_checked(file_path)
-                extracted_info['勾選狀況'] = checkbox_status
-
-                data.append(extracted_info)
+                # # 調用 is_checked 函數並添加勾選狀況
+                # checkbox_status = is_checked(os.path.join(directory_path, entry["檔名"]))
+                # extracted_info['勾選狀況'] = checkbox_status
+                processed_data.append(extracted_info)
                 combined_text = ""
                 filenames = []
 
         else:
             # 其他表單
-            filenames.append(filename)
-            extracted_info = extract_info(text_detected, filenames)
-            data.append(extracted_info)
+            filenames.append(entry["檔名"])
+            extracted_info = extract_info(entry["OCR文字"], filenames)
+            processed_data.append(extracted_info)
             filenames = []
-            
-
 
     # 處理最後一組合併的文本
     if combined_text:
         extracted_info = extract_info(combined_text, filenames)
-        data.append(extracted_info)
+        processed_data.append(extracted_info)
 
-    return data
+    return processed_data
+    
+
+
+
+if __name__ == "__main__":
+    processed_data = process_data_from_json("./pure_ocr_output.json")
+    save_to_json(processed_data, "output.json")
