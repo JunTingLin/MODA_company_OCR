@@ -3,36 +3,49 @@ import re
 def extract_info(text,filenames):
     """從文字中提取關鍵信"""
     info = {}
-    info['檔名'] = filenames  # 加檔名到資訊中
-    info['OCR文字'] = text  # 加入 OCR 辨識結果
 
-    if "數位發展部數位產業署投標廠商聲明書" in text:
-        info['表格類型'] = '投標廠商聲明書'
-        info['統一編號'] = extract_unified_number(text)
-    elif "基本資料" in text and "商工登記公示資料查詢服務" in text:
-        info['表格類型'] = '基本資料表'
-        info['統一編號'] = extract_unified_number(text)
-        info['公司名稱'] = extract_company_name(text)
-        info['代表人姓名'] = extract_representative_person_name(text)
-        info['所營事業資料'] = extract_business_data(text)
+    if "基本資料" in text and "商工登記公示資料查詢服務" in text:
+        info['code'] = '01'
+        info['filename'] = filenames
+        info['ocr_data'] = text
+        info['table'] = '基本資料表'
+        info['ocr_cid'] = extract_unified_number(text)
+        info['company_name'] = extract_company_name(text)
+        info['boss_name'] = extract_representative_person_name(text)
+        info['business_code'] = extract_business_data(text)
     elif "401" in text and ("營業人銷售額與稅額申報書清單" in text or "營業人銷售額與稅額申報書" in text):
-        info['表格類型'] = '401表'
-        info['統一編號'] = extract_unified_number(text)
-        info['營業人名稱'] = extract_company_name(text)
-        info['負責人姓名'] = extract_responsible_person_name(text)
+        info['code'] = '02'
+        info['filename'] = filenames
+        info['ocr_data'] = text
+        info['table'] = '納稅證明'
+        info['ocr_cid'] = extract_unified_number(text)
+        info['company_name'] = extract_company_name(text)
+        info['boss_name'] = extract_responsible_person_name(text)
         info['營業稅網路申報收件章'] = '是' if "營業稅網路申報收件章" in text else '否'
         if info['營業稅網路申報收件章'] == '是':
             info['蓋章日期'] = extract_stamp_date(text)
     elif "403" and "營業人銷售額與稅額申報書" in text:
-        info['表格類型'] = '403表'
-        info['統一編號'] = extract_unified_number(text)
-        info['營業人名稱'] = extract_company_name(text)
-        info['負責人姓名'] = extract_responsible_person_name(text)
+        info['code'] = '02'
+        info['filename'] = filenames
+        info['ocr_data'] = text
+        info['table'] = '納稅證明'
+        info['ocr_cid'] = extract_unified_number(text)
+        info['company_name'] = extract_company_name(text)
+        info['boss_name'] = extract_responsible_person_name(text)
         info['營業稅網路申報收件章'] = '是' if "營業稅網路申報收件章" in text else '否'
         if info['營業稅網路申報收件章'] == '是':
             info['蓋章日期'] = extract_stamp_date(text)
+    elif "數位發展部數位產業署投標廠商聲明書" in text:
+        info['code'] = '03'
+        info['filename'] = filenames
+        info['ocr_data'] = text
+        info['table'] = '投標廠商聲明書'
+        info['ocr_cid'] = extract_unified_number(text)
     else:
-        pass
+        info['code'] = '00'
+        info['filename'] = filenames
+        info['ocr_data'] = text
+        info['table'] = 'undefined'
 
     return info
 

@@ -71,17 +71,17 @@ def process_results(results):
     處理檢查結果，每兩個結果為一組。
 
     :param results: 勾選框檢查結果的列表
-    :return: 處理後的結果字典
+    :return: 處理後的結果列表
     """
-    processed_results = {}
+    processed_results = []
     for i in range(0, len(results), 2):
-        key = f"{(i//2) + 1}."
         if results[i] == False and results[i+1] == True:
-            processed_results[key] = '否'
+            processed_results.append(0)
         elif results[i] == True and results[i+1] == False:
-            processed_results[key] = '是'
+            processed_results.append(1)
         else:
-            processed_results[key] = 'Not Sure'
+            processed_results.append('Not Sure')
+
 
     return processed_results
 

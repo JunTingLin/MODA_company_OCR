@@ -24,17 +24,17 @@ def load_business_code_mapping(csv_file):
 def add_business_description_to_data(json_data, mapping):
     """向 JSON 数据添加營業項目的中文描述"""
     for entry in json_data:
-        if entry.get("表格類型") == "基本資料表":
-            codes = entry.get("所營事業資料", "").split(',')
+        if entry.get("table") == "基本資料表":
+            codes = entry.get("business_code", "").split(',')
             descriptions = [mapping.get(code, "Not found") for code in codes]
-            entry["營業項目"] = ','.join(descriptions)
+            entry["business_name"] = ','.join(descriptions)
     return json_data
 
 def add_checkbox_status_to_data(json_data, directory_path):
     """向 JSON 數據添加勾選狀況"""
     for entry in json_data:
-        if entry.get("表格類型") == "投標廠商聲明書":
-            entry["勾選狀況"] = is_checked(os.path.join(directory_path, entry["檔名"][0])) # 僅第一頁
+        if entry.get("table") == "投標廠商聲明書":
+            entry["check"] = is_checked(os.path.join(directory_path, entry["filename"][0])) # 僅第一頁
     return json_data
 
 
@@ -46,35 +46,35 @@ def generate_summary(input_json_path):
 
     for entry in data:
         # 投標廠商聲明書不納入統計
-        if entry.get("表格類型") == "投標廠商聲明書":
+        if entry.get("table") == "投標廠商聲明書":
             continue
 
         # 獲取每筆資料的統一編號
-        unified_number = entry.get("統一編號")
+        unified_number = entry.get("ocr_cid")
         # 跳過統一編號為 None 或無效的記錄
         if (not unified_number) or  (unified_number == "Not match") or (len(unified_number) != 8):
             continue
-        # 獲取每筆資料的公司名稱or營業人名稱，如果都沒有找到則預設為 "Not match"
-        company_name = entry.get("公司名稱", entry.get("營業人名稱", "Not match")).strip()
+        # 獲取每筆資料的公司名稱，如果都沒有找到則預設為 "Not match"
+        company_name = entry.get("company_name").strip()
         # 獲取每筆資料的負責人姓名，如果沒有找到則預設為 "Not match"
-        representative_name = entry.get("負責人姓名", entry.get("代表人姓名", "Not match")).strip()
+        representative_name = entry.get("boss_name").strip()
 
         # 檢查統一編號是否已經存在於摘要字典中
         if unified_number not in company_summary:
             # 如果不存在，則新增一個新的摘要記錄
             company_summary[unified_number] = {
-                "統一編號": unified_number,
-                "公司名稱": company_name,
-                "負責人姓名": representative_name,
+                "ocr_cid": unified_number,
+                "company_name": company_name,
+                "boss_name": representative_name,
                 "allMatch": True  # 設定一個標誌，表示目前為止名稱與編號是匹配的
             }
         else:
             # 如果該統一編號已存在，檢查名稱是否與已儲存的名稱相符
-            if company_summary[unified_number]["公司名稱"] != company_name or company_name == "Not match":
+            if company_summary[unified_number]["company_name"] != company_name or company_name == "Not match":
                 # 如果不匹配，將 allMatch 標誌設為 False
                 company_summary[unified_number]["allMatch"] = False
             # 檢查負責人姓名是否與已儲存的姓名相符
-            if company_summary[unified_number]["負責人姓名"] != representative_name or representative_name == "Not match":
+            if company_summary[unified_number]["boss_name"] != representative_name or representative_name == "Not match":
                 # 如果不匹配，將 allMatch 標誌設為 False
                 company_summary[unified_number]["allMatch"] = False
             
@@ -85,7 +85,7 @@ def generate_summary(input_json_path):
 
 def check_api_data(summary_data, update_progress=None, update_status=None):
     for i, item in enumerate(summary_data):
-        unified_number = item['統一編號']
+        unified_number = item['ocr_cid']
 
         # 如果統一編號為None，則跳過當前迭代
         if unified_number is None:
@@ -102,25 +102,25 @@ def check_api_data(summary_data, update_progress=None, update_status=None):
         if response.status_code == 200 and response.content.strip():
             try:
                 api_data = response.json()
-                item["api資料"] = api_data  # 將 API 回傳的 JSON 資料加入
+                item["api"] = api_data  # 將 API 回傳的 JSON 資料加入
 
                 api_company_name = api_data[0]['Company_Name'] if api_data else 'Not match'
                 api_responsible_name = api_data[0]['Responsible_Name'] if api_data else 'Not match'
                 
                 # 比對公司名稱
-                if api_company_name == 'Not match' or item["公司名稱"] != api_company_name:
-                    item["公司名稱"] = api_company_name
+                if api_company_name == 'Not match' or item["company_name"] != api_company_name:
+                    item["company_name"] = api_company_name
                     item["allMatch"] = False
         
                 # 比對負責人姓名
-                if api_responsible_name == 'Not match' or item["負責人姓名"] != api_responsible_name:
-                    item["負責人姓名"] = api_responsible_name
+                if api_responsible_name == 'Not match' or item["boss_name"] != api_responsible_name:
+                    item["boss_name"] = api_responsible_name
                     item["allMatch"] = False
             except json.JSONDecodeError:
-                item["api資料"] = "Error in API response"
+                item["api"] = "Error in API response"
                 item["allMatch"] = False
         else:
-            item["api資料"] = "No data available"
+            item["api"] = "No data available"
             item["allMatch"] = False
 
     return summary_data

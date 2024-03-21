@@ -33,10 +33,10 @@ def organize_images_by_unified_number(json_file, source_folder):
         data = json.load(file)
 
     for entry in data:
-        unified_number = entry.get("統一編號")
+        unified_number = entry.get("ocr_cid")
         if not unified_number or unified_number == "Not match":
             continue
-        filenames = entry.get("檔名", [])
+        filenames = entry.get("filename", [])
         if not filenames:
             continue
 
@@ -87,8 +87,8 @@ def pure_ocr_to_json(directory_path, output_json_path, update_progress=None, upd
         file_path = os.path.join(directory_path, filename)
         text_detected = detect_text_from_picture(file_path)
         info = {}
-        info['檔名'] = filename
-        info['OCR文字'] = text_detected
+        info['filename'] = filename
+        info['ocr_data'] = text_detected
         data.append(info)
 
     with open(output_json_path, 'w', encoding='utf-8') as file:
@@ -105,28 +105,28 @@ def process_data_from_json(ocr_json, update_progress=None, update_status=None):
     skip_next = False
 
     for index,entry in enumerate(data):
-        print(f"正在擷取 {entry['檔名']}...")
+        print(f"正在擷取 {entry['filename']}...")
 
         if update_progress and update_status:
-            current_progress = (index + 1) * 100 // len(entry['檔名'])
+            current_progress = (index + 1) * 100 // len(entry['filename'])
             update_progress.emit(current_progress)
-            update_status.emit(f"正在擷取 {entry['檔名']}...")
+            update_status.emit(f"正在擷取 {entry['filename']}...")
         
         if skip_next:
             skip_next = False
             continue
 
-        if "公司基本資料" in entry["OCR文字"] and "商工登記公示資料查詢服務" in entry["OCR文字"]:
-            current_unified_number = extract_unified_number(entry["OCR文字"])
-            combined_text += entry["OCR文字"] + '\n'
-            filenames.append(entry["檔名"])
+        if "公司基本資料" in entry["ocr_data"] and "商工登記公示資料查詢服務" in entry["ocr_data"]:
+            current_unified_number = extract_unified_number(entry["ocr_data"])
+            combined_text += entry["ocr_data"] + '\n'
+            filenames.append(entry["filename"])
             if index + 1 < len(data):
                 next_entry = data[index + 1]
-                next_unified_number = extract_unified_number(next_entry["OCR文字"])
-            if index + 1 < len(data) and (current_unified_number == next_unified_number or next_unified_number=='Not match') and "數位發展部數位產業署投標廠商聲明書" not in next_entry["OCR文字"] and "營業人銷售額與稅額申報書清單" not in next_entry["OCR文字"] and "營業人銷售額與稅額申報書" not in next_entry["OCR文字"]:
+                next_unified_number = extract_unified_number(next_entry["ocr_data"])
+            if index + 1 < len(data) and (current_unified_number == next_unified_number or next_unified_number=='Not match') and "數位發展部數位產業署投標廠商聲明書" not in next_entry["ocr_data"] and "營業人銷售額與稅額申報書清單" not in next_entry["ocr_data"] and "營業人銷售額與稅額申報書" not in next_entry["ocr_data"]:
                 # 合併下一頁
-                combined_text += next_entry["OCR文字"] + '\n'
-                filenames.append(next_entry["檔名"])
+                combined_text += next_entry["ocr_data"] + '\n'
+                filenames.append(next_entry["filename"])
                 skip_next = True
                 extracted_info = extract_info(combined_text, filenames)
                 processed_data.append(extracted_info)
@@ -138,27 +138,24 @@ def process_data_from_json(ocr_json, update_progress=None, update_status=None):
                 combined_text = ""
                 filenames = []
 
-        elif "數位發展部數位產業署投標廠商聲明書" in entry["OCR文字"]:
+        elif "數位發展部數位產業署投標廠商聲明書" in entry["ocr_data"]:
             # 投標廠商聲明書處理邏輯
-            combined_text += entry["OCR文字"] + '\n'
-            filenames.append(entry["檔名"])
+            combined_text += entry["ocr_data"] + '\n'
+            filenames.append(entry["filename"])
             if index + 1 < len(data):
                 next_entry = data[index + 1]
-                combined_text += next_entry["OCR文字"] + '\n'
-                filenames.append(next_entry["檔名"])
+                combined_text += next_entry["ocr_data"] + '\n'
+                filenames.append(next_entry["filename"])
                 skip_next = True
                 extracted_info = extract_info(combined_text, filenames)
-                # # 調用 is_checked 函數並添加勾選狀況
-                # checkbox_status = is_checked(os.path.join(directory_path, entry["檔名"]))
-                # extracted_info['勾選狀況'] = checkbox_status
                 processed_data.append(extracted_info)
                 combined_text = ""
                 filenames = []
 
         else:
             # 其他表單
-            filenames.append(entry["檔名"])
-            extracted_info = extract_info(entry["OCR文字"], filenames)
+            filenames.append(entry["filename"])
+            extracted_info = extract_info(entry["ocr_data"], filenames)
             processed_data.append(extracted_info)
             filenames = []
 
