@@ -3,13 +3,11 @@ pytesseract.pytesseract.tesseract_cmd = r'Tesseract-OCR\tesseract.exe'  # 或者
 from PIL import Image
 import re
 import os
-from utils import numerical_sort
 
-def auto_rotate_images_in_folder(folder_path, update_progress=None, update_status=None):
-    files = sorted([f for f in os.listdir(folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))], key=numerical_sort)
-    total_files = len(files)
+def auto_rotate_images_in_folder(folder_path, filenames, update_progress=None, update_status=None):
+    total_files = len(filenames)
 
-    for index, filename in enumerate(files):
+    for index, filename in enumerate(filenames):
         filepath = os.path.join(folder_path, filename)
         try:
             # 使用OCR的OSD功能來檢測圖片方向

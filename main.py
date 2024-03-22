@@ -1,5 +1,5 @@
 from pdf_processing import process_pdf_folder
-from file_management import clear_directory, organize_images_by_unified_number, copy_files_to_output_folder, remove_pdf_files_from_folder, remove_or_replace_chinese_characters, pure_ocr_to_json, process_data_from_json
+from file_management import clear_directory, organize_images_by_unified_number, copy_files_to_output_folder, remove_pdf_files_from_folder, remove_or_replace_chinese_characters, pure_ocr_to_json, process_data_from_json, extract_filenames
 from data_processing import save_to_json
 from data_processing import load_business_code_mapping, add_business_description_to_data, add_checkbox_status_to_data
 from data_processing import generate_summary, check_api_data
@@ -23,21 +23,23 @@ def main(file_paths, output_folder_path):
     clear_directory(output_folder_path)
     print("正在複製文件到輸出資料夾...")
     copy_files_to_output_folder(file_paths, output_folder_path)
+
+    filenames = extract_filenames(file_paths)
     print("正在刪除或替換檔案名稱中的中文字符...")
-    remove_or_replace_chinese_characters(output_folder_path)
+    updated_filenames =remove_or_replace_chinese_characters(output_folder_path, filenames)
 
     # 處理資料夾中的所有 PDF 和圖片文件
     print("正在處理資料夾中的所有 PDF 並轉成圖片...")
-    process_pdf_folder(output_folder_path)
+    updated_filenames = process_pdf_folder(output_folder_path, updated_filenames)
     print("正在刪除 PDF 文件...")
     remove_pdf_files_from_folder(output_folder_path)  # 轉換完畢後刪除 PDF 文件
     print("正在自動旋轉圖片...")
-    auto_rotate_images_in_folder(output_folder_path)  # 自動旋轉圖片
+    auto_rotate_images_in_folder(output_folder_path, updated_filenames)  # 自動旋轉圖片
 
     print("正在查表...")
     business_code_mapping = load_business_code_mapping(business_code_mapping_file)
     print("正在辨識圖片...")
-    # pure_ocr_to_json(output_folder_path, output_pure_json_path)
+    pure_ocr_to_json(output_folder_path, updated_filenames, output_pure_json_path)
     print("正在擷取圖片...")
     processed_data = process_data_from_json(output_pure_json_path)
     processed_data_with_desc = add_business_description_to_data(processed_data, business_code_mapping)
@@ -65,4 +67,4 @@ if __name__ == "__main__":
     # file_paths = args.files.split(',')  # 用逗號分隔檔案路徑
     # output_folder_path = args.output_folder
     # main(file_paths, output_folder_path)
-    main([r'C:\Users\junting\Desktop\ocr_data\data1\scan_test_all.pdf'],r'C:\Users\junting\Desktop\ocr_result')
+    main([r'C:\Users\junting\Desktop\ocr_data\data1\scan_test_all_頁面_01.jpg'],r'C:\Users\junting\Desktop\ocr_result')

@@ -6,8 +6,6 @@ import string
 import re
 from ocr import detect_text_from_picture
 from text_extraction import extract_info, extract_unified_number
-from utils import numerical_sort
-from data_processing import save_to_json
 
 def clear_directory(directory_path):
     """清空指定資料夾中的所有文件"""
@@ -49,8 +47,9 @@ def organize_images_by_unified_number(json_file, source_folder):
             if os.path.exists(source_path):  # 確保文件存在
                 shutil.move(source_path, target_path)
 
-def remove_or_replace_chinese_characters(directory_path):
-    for filename in os.listdir(directory_path):
+def remove_or_replace_chinese_characters(directory_path, filenames):
+    updated_filenames = []
+    for filename in filenames:
         new_filename = filename
         if '頁面' in new_filename:
             new_filename = new_filename.replace('頁面', 'page')
@@ -69,17 +68,20 @@ def remove_or_replace_chinese_characters(directory_path):
         # 重新命名檔案
         os.rename(old_file_path, new_file_path)
 
+        updated_filenames.append(new_filename)
 
-def pure_ocr_to_json(directory_path, output_json_path, update_progress=None, update_status=None):
+    return updated_filenames
+
+
+def pure_ocr_to_json(directory_path, filenames, output_json_path, update_progress=None, update_status=None):
     """將純文字的OCR結果儲存到JSON檔案"""
-    files = sorted(os.listdir(directory_path), key=numerical_sort)
 
     data = []
-    for index, filename in enumerate(files):
+    for index, filename in enumerate(filenames):
         print(f"正在辨識 {filename}...")
 
         if update_progress and update_status:
-            current_progress = (index + 1) * 100 // len(files)
+            current_progress = (index + 1) * 100 // len(filenames)
             update_progress.emit(current_progress)
             update_status.emit(f'正在辨識 {filename}...')
 
@@ -166,9 +168,13 @@ def process_data_from_json(ocr_json, update_progress=None, update_status=None):
 
     return processed_data
     
+def extract_filenames(file_paths):
+    """從檔案路徑清單中提取檔案名"""
+    filenames = [os.path.basename(path) for path in file_paths]
+    return filenames
 
 
 
 if __name__ == "__main__":
-    processed_data = process_data_from_json("./pure_ocr_output.json")
-    save_to_json(processed_data, "output.json")
+    updated_filenames = remove_or_replace_chinese_characters(r'C:\Users\junting\Desktop\ocr_result',["scan_test_all_頁面_01.jpg"])
+    print(updated_filenames)

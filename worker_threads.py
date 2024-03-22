@@ -1,10 +1,9 @@
 from PySide2.QtCore import QThread, Signal
 from pdf_processing import process_pdf_folder
-from file_management import clear_directory, copy_files_to_output_folder, remove_pdf_files_from_folder,organize_images_by_unified_number, remove_or_replace_chinese_characters, pure_ocr_to_json, process_data_from_json
+from file_management import clear_directory, copy_files_to_output_folder, remove_pdf_files_from_folder,organize_images_by_unified_number, remove_or_replace_chinese_characters, pure_ocr_to_json, process_data_from_json, extract_filenames
 from data_processing import load_business_code_mapping, add_business_description_to_data, save_to_json, add_checkbox_status_to_data
 from data_processing import generate_summary, check_api_data
 import os
-import google.auth.exceptions
 from image_processing import auto_rotate_images_in_folder
 
 
@@ -28,38 +27,35 @@ class WorkerThread(QThread):
             self.update_status.emit("正在清空輸出資料夾...")
             print("正在清空輸出資料夾...")
             clear_directory(self.output_folder_path)
-
             # 複製文件到輸出資料夾
             self.update_status.emit("正在複製文件到輸出資料夾...")
             print("正在複製文件到輸出資料夾...")
             copy_files_to_output_folder(self.file_paths, self.output_folder_path)
 
             # 刪除或替換檔案名稱中的中文字符
+            filenames = extract_filenames(self.file_paths)
             self.update_status.emit("正在刪除或替換檔案名稱中的中文字符...")
             print("正在刪除或替換檔案名稱中的中文字符...")
-            remove_or_replace_chinese_characters(self.output_folder_path)
+            updated_filenames =remove_or_replace_chinese_characters(self.output_folder_path, filenames)
 
             # 處理資料夾中的所有 PDF 並轉成圖片
             self.update_status.emit("正在處理資料夾中的所有 PDF 並轉成圖片...")
             print("正在處理資料夾中的所有 PDF 並轉成圖片...")
-            process_pdf_folder(self.output_folder_path)
-
+            updated_filenames = process_pdf_folder(self.output_folder_path, updated_filenames)
             # 刪除 PDF 文件
             self.update_status.emit("正在刪除 PDF 文件...")
             print("正在刪除 PDF 文件...")
             remove_pdf_files_from_folder(self.output_folder_path)
-
             # 自動旋轉圖片
             self.update_status.emit("正在自動旋轉圖片...")
             print("正在自動旋轉圖片...")
-            auto_rotate_images_in_folder(self.output_folder_path, self.update_progress, self.update_status)
-
+            auto_rotate_images_in_folder(self.output_folder_path, updated_filenames, self.update_progress, self.update_status)
             # 處理圖片文件
             self.update_status.emit("正在處理圖片文件...")
             print("正在處理圖片文件...")
             self.update_progress.emit(90)
             print("正在辨識圖片...")
-            # pure_ocr_to_json(self.output_folder_path, self.output_pure_json_path, self.update_progress, self.update_status)
+            pure_ocr_to_json(self.output_folder_path, updated_filenames, self.output_pure_json_path, self.update_progress, self.update_status)
             print("正在擷取圖片...")
             processed_data = process_data_from_json(self.output_pure_json_path, self.update_progress, self.update_status)
 
@@ -71,8 +67,7 @@ class WorkerThread(QThread):
             business_code_mapping_file = '公司行號營業項目代碼表.csv'
             business_code_mapping = load_business_code_mapping(business_code_mapping_file)
             processed_data_with_desc = add_business_description_to_data(processed_data, business_code_mapping)
-            processed_data_with_checkbox = add_checkbox_status_to_data(processed_data_with_desc, self.output_folder_path)
-            
+            processed_data_with_checkbox = add_checkbox_status_to_data(processed_data_with_desc, self.output_folder_path)          
             # 儲存數據
             output_json_path = os.path.join(self.output_folder_path, 'output.json')
             save_to_json(processed_data_with_checkbox, output_json_path)
