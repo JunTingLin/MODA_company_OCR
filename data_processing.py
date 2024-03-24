@@ -3,6 +3,7 @@ import csv
 import requests
 from checkbox_detector import is_checked
 import os
+import pandas as pd
 
 
 def save_to_json(data, file_name):
@@ -20,6 +21,18 @@ def load_business_code_mapping(csv_file):
             code, description = row
             mapping[code.strip()] = description.strip()
     return mapping
+
+def load_unique_names(column_name, csv_file='R2_Location.csv'):
+    """
+    根據列名從 CSV 檔案中提取唯一的名稱集合。
+
+    :param column_name: 需要提取的列名，例如 '金融機構名稱' 或 '分支機構名稱'
+    :return: 一個包含唯一名稱的集合
+    """
+    df = pd.read_csv(csv_file)
+    # 指定提取列的數據，並將其轉換為集合去重覆
+    unique_names = set(df[column_name].dropna().unique())
+    return unique_names
 
 def add_business_description_to_data(json_data, mapping):
     """向 JSON 数据添加營業項目的中文描述"""

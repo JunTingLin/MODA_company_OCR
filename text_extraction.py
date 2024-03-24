@@ -1,4 +1,5 @@
 import re
+from data_processing import load_unique_names
 
 def extract_info(text,filenames):
     """從文字中提取關鍵信"""
@@ -21,9 +22,8 @@ def extract_info(text,filenames):
         info['ocr_cid'] = extract_unified_number(text)
         info['company_name'] = extract_company_name(text)
         info['boss_name'] = extract_responsible_person_name(text)
-        info['營業稅網路申報收件章'] = '是' if "營業稅網路申報收件章" in text else '否'
-        if info['營業稅網路申報收件章'] == '是':
-            info['蓋章日期'] = extract_stamp_date(text)
+        info['date'] = extract_401_403_year_month(text)
+        info['stamp'] = 'true' if "營業稅網路申報收件章" in text else 'false'
     elif "403" and "營業人銷售額與稅額申報書" in text:
         info['code'] = '02'
         info['filename'] = filenames
@@ -32,15 +32,21 @@ def extract_info(text,filenames):
         info['ocr_cid'] = extract_unified_number(text)
         info['company_name'] = extract_company_name(text)
         info['boss_name'] = extract_responsible_person_name(text)
-        info['營業稅網路申報收件章'] = '是' if "營業稅網路申報收件章" in text else '否'
-        if info['營業稅網路申報收件章'] == '是':
-            info['蓋章日期'] = extract_stamp_date(text)
+        info['date'] = extract_401_403_year_month(text)
+        info['stamp'] = 'true' if "營業稅網路申報收件章" in text else 'false'
     elif "數位發展部數位產業署投標廠商聲明書" in text:
         info['code'] = '03'
         info['filename'] = filenames
         info['ocr_data'] = text
         info['table'] = '投標廠商聲明書'
         info['ocr_cid'] = extract_unified_number(text)
+    elif ("bank" in text.lower() and "銀行" in text) or ("郵政匯票" in text):
+        info['code'] = '04'
+        info['filename'] = filenames
+        info['ocr_data'] = text
+        info['table'] = '支票'
+        info['bank1'] = extract_bank_name(text)
+        info['bank2'] = extract_branch_name(text)
     else:
         info['code'] = '00'
         info['filename'] = filenames
@@ -141,21 +147,57 @@ def is_valid_name(name):
     return False
 
 
-def extract_stamp_date(text):
+def extract_401_403_year_month(text):
     """
-    從文本中提取「蓋章日期」。
+    從文本中提取“年份月份”並轉換為公元格式
 
-    :param text: 包含日期的文本
-    :return: 提取到的日期或者「日期未匹配」
+    :param text: 包含年月份的文本
+    :return: 提取到的西元年月份
     """
-    # 修改後的日期正則表達式，考慮了日期元素之間可能存在的空格
-    date_pattern = r"\d{3}\s*\.\s*\d{2}\s*\.\s*\d{2}"
-    date_match = re.search(date_pattern, text)
-    return date_match.group(0) if date_match else '日期未匹配'
+    year_month_pattern = r"所屬年月份:\s*(\d{3})\s*年\s*(\d{2})"
+    match = re.search(year_month_pattern, text)
+    if match:
+        year, month = match.groups()
+        year = int(year) + 1911  # 將民國年轉換為西元年
+        return f"{year}/{month}/01"
+    else:
+        return 'Not match'
+    
+
+def extract_bank_name(text):
+    bank_names = load_unique_names('金融機構名稱')
+    bank_names = clean_and_expand_bank_names(bank_names)
+    for bank_name in bank_names:
+        if bank_name in text:
+            return bank_name
+    return 'Not match'
+
+def extract_branch_name(text):
+    branch_names = load_unique_names('分支機構名稱')
+    for branch_name in branch_names:
+        if branch_name in text:
+            return branch_name
+    return 'Not match'
+
+def clean_and_expand_bank_names(bank_names):
+    cleaned_names = set()
+    for name in bank_names:
+        # 移除全形括號及其中的內容
+        name = re.sub(r'（.*?）', '', name)
+        # 只保留以「銀行」結尾的名稱
+        if name.endswith('銀行'):
+            cleaned_names.add(name)
+            # 如果名称中包含「商業」，添加去除「商業」的版本
+            if '商業' in name:
+                cleaned_name = name.replace('商業', '')
+                cleaned_names.add(cleaned_name)
+    # 添加「郵政匯票」
+    cleaned_names.add('郵政匯票')
+
+    return cleaned_names
+
 
 
 if __name__ == "__main__":
-    text = ""
-    info = extract_info(text, 'filename')
-    import data_processing
-    data_processing.save_to_json(info, 'debug.json')
+    result =extract_bank_name('')
+

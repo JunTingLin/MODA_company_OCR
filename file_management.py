@@ -176,5 +176,5 @@ def extract_filenames(file_paths):
 
 
 if __name__ == "__main__":
-    updated_filenames = remove_or_replace_chinese_characters(r'C:\Users\junting\Desktop\ocr_result',["scan_test_all_頁面_01.jpg"])
-    print(updated_filenames)
+    result = process_data_from_json('pure_ocr_output.json')
+    print(result)

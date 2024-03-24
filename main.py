@@ -67,4 +67,4 @@ if __name__ == "__main__":
     # file_paths = args.files.split(',')  # 用逗號分隔檔案路徑
     # output_folder_path = args.output_folder
     # main(file_paths, output_folder_path)
-    main([r'C:\Users\junting\Desktop\ocr_data\data1\scan_test_all_頁面_01.jpg'],r'C:\Users\junting\Desktop\ocr_result')
+    main([r"C:\Users\junting\Desktop\ocr_data\支票範例\check-TT0746839.png"],r'C:\Users\junting\Desktop\ocr_result')
