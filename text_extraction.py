@@ -45,8 +45,12 @@ def extract_info(text,filenames):
         info['filename'] = filenames
         info['ocr_data'] = text
         info['table'] = '支票'
+        info['name'] = extract_payee_name(text)
         info['bank1'] = extract_bank_name(text)
         info['bank2'] = extract_branch_name(text)
+        info['money'] = extract_amount(text)
+        info['date'] = extract_check_date(text)
+        info['serial'] = extract_serial(text)
     else:
         info['code'] = '00'
         info['filename'] = filenames
@@ -196,6 +200,50 @@ def clean_and_expand_bank_names(bank_names):
 
     return cleaned_names
 
+def extract_payee_name(text):
+    if '數位發展部數位產業署' in text:
+        return '數位發展部數位產業署'
+
+    # 確保只匹配「憑票支付」之後直到第一個換行符之前的內容
+    payee_pattern = r"憑票支付[^\S\n]*([^\n]+)"
+    payee_match = re.search(payee_pattern, text)
+    
+    return payee_match.group(1) if payee_match else 'Not match'
+
+def extract_amount(text):
+    # 使用正規表示式來匹配至少包含一個逗號的金額格式
+    amount_pattern = r"\d{1,3},\d{3}(,\d{3})*"
+    amount_match = re.search(amount_pattern, text)
+    
+    return amount_match.group() if amount_match else 'Not match'
+
+def extract_check_date(text):
+    date_pattern = r"(\d{2,3}\s*年\s*\d{1,2}\s*月\s*\d{1,2}\s*日)"
+    date_match = re.search(date_pattern, text)
+    
+    if date_match:
+        check_date = date_match.group(0)  # 獲取匹配的完整民國日期
+        # 標準化日期，移除不必要的空格
+        normalized_date = re.sub(r"\s+", "", check_date)
+        return normalized_date
+    return 'Not match'
+
+def extract_serial(text):
+    # 嘗試匹配英文開頭、可能包含空格、數字結尾的模式
+    pattern_alpha_numeric = r'[A-Za-z][A-Za-z0-9]*\s*\d+'
+    match_alpha_numeric = re.search(pattern_alpha_numeric, text)
+    
+    if match_alpha_numeric:
+        return match_alpha_numeric.group(0).replace(" ", "")  # 移除匹配結果中的空格
+    
+    # 如果上面的模式沒有匹配到，嘗試匹配一串至少5位的連續數字
+    pattern_numeric = r'\d{5,}'
+    match_numeric = re.search(pattern_numeric, text)
+    
+    if match_numeric:
+        return match_numeric.group(0)
+    
+    return 'Not match'
 
 
 if __name__ == "__main__":
