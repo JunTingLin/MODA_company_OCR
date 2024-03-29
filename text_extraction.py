@@ -229,15 +229,15 @@ def extract_check_date(text):
     return 'Not match'
 
 def extract_serial(text):
-    # 嘗試匹配英文開頭、可能包含空格、數字結尾的模式
-    pattern_alpha_numeric = r'[A-Za-z][A-Za-z0-9]*\s*\d+'
+    # 匹配英文字母開頭，數字結尾的序列，直到遇到換行符為止
+    pattern_alpha_numeric = r'[A-Za-z]{1,3}\s*\d{4,}'
     match_alpha_numeric = re.search(pattern_alpha_numeric, text)
     
     if match_alpha_numeric:
         return match_alpha_numeric.group(0).replace(" ", "")  # 移除匹配結果中的空格
     
-    # 如果上面的模式沒有匹配到，嘗試匹配一串至少5位的連續數字
-    pattern_numeric = r'\d{5,}'
+    # 如果上面的模式沒有匹配到，嘗試匹配一串連續數字，直到遇到\n為止
+    pattern_numeric = r'\d{9,}(?=[^\n])'
     match_numeric = re.search(pattern_numeric, text)
     
     if match_numeric:
