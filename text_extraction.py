@@ -60,6 +60,13 @@ def extract_info(text,filenames):
         info['company_name'] = extract_english_company_name(text)
         info['compare'] = ''
         info['expiry_date'] = extract_27001_valid_date(text)
+    elif '電腦軟體投標廠商報價單' in text:
+        info['code'] = '06'
+        info['filename'] = filenames
+        info['ocr_data'] = text
+        info['table'] = '報價單'
+        info['ocr_cid'] = extract_unified_number(text)
+        info['company_name'] = extract_company_name(text)
     else:
         info['code'] = '00'
         info['filename'] = filenames
