@@ -1,5 +1,6 @@
 import re
 from data_processing import load_unique_names
+from datetime import datetime
 
 def extract_info(text,filenames):
     """從文字中提取關鍵信"""
@@ -51,6 +52,14 @@ def extract_info(text,filenames):
         info['money'] = extract_amount(text)
         info['date'] = extract_check_date(text)
         info['serial'] = extract_serial(text)
+    elif 'ISO' in text and '27001' in text:
+        info['code'] = '05'
+        info['filename'] = filenames
+        info['ocr_data'] = text
+        info['table'] = 'ISO27001'
+        info['company_name'] = extract_english_company_name(text)
+        info['compare'] = ''
+        info['expiry_date'] = extract_27001_valid_date(text)
     else:
         info['code'] = '00'
         info['filename'] = filenames
@@ -87,6 +96,22 @@ def extract_company_name(text):
         return company_name
     else:
         return 'Not match'
+    
+import re
+
+def extract_english_company_name(text):
+    # 分別匹配 "Corporation"、"LLC"、"LTD"、"INC"
+    company_types = ["Corporation", "LLC", "LTD", "INC"]
+    for company_type in company_types:
+        # \b 是單詞邊界，[^\n]*? 代表非貪婪匹配任意字符直到換行
+        pattern = r"[^\n]*?\b" + company_type + r"\b[^\n]*"
+        match = re.search(pattern, text, re.IGNORECASE)  # 不區分大小寫
+        if match:
+            # 去除結果中可能的多餘空格
+            company_name = " ".join(match.group(0).strip().split())
+            return company_name
+    return 'Not match'
+
 
 def extract_business_data(text):
     business_data_pattern = r"\b[A-Za-z][0-9]{6}\b"  # 以英文字母開頭，後面接6個數字
@@ -244,6 +269,40 @@ def extract_serial(text):
         return match_numeric.group(0)
     
     return 'Not match'
+
+def extract_27001_valid_date(text):
+    # BSI
+    expiry_date_bsi = re.search(r"Expiry Date: (\d{4}-\d{2}-\d{2})", text)
+    if expiry_date_bsi:
+        return datetime.strptime(expiry_date_bsi.group(1), "%Y-%m-%d").strftime("%Y/%m/%d")
+
+    # EY
+    expiry_date_ey = re.search(r"Expiration date of certificate: (\w+ \d{1,2}, \d{4})", text)
+    if expiry_date_ey:
+        return datetime.strptime(expiry_date_ey.group(1), "%B %d, %Y").strftime("%Y/%m/%d")
+    
+    # Schellman
+    expiry_date_schellman = re.search(r"Expiration Date\n(\w+ \d{1,2}, \d{4})", text)
+    if expiry_date_schellman:
+        return datetime.strptime(expiry_date_schellman.group(1), "%B %d, %Y").strftime("%Y/%m/%d")
+    
+    # AFNOR
+    expiry_date_afnor = re.search(r"jusqu'au\n(\d{4}-\d{2}-\d{2})", text)
+    if expiry_date_afnor:
+        return datetime.strptime(expiry_date_afnor.group(1), "%Y-%m-%d").strftime("%Y/%m/%d")
+    
+    # TUV
+    expiry_date_tuv = re.search(r"證書有效期至(\d{4}-\d{2}-\d{2})", text)
+    if expiry_date_tuv:
+        return datetime.strptime(expiry_date_tuv.group(1), "%Y-%m-%d").strftime("%Y/%m/%d")
+    
+    # SGS
+    expiry_date_sgs = re.search(r"until (\d{1,2} \w+ \d{4})", text)
+    if expiry_date_sgs:
+        return datetime.strptime(expiry_date_sgs.group(1), "%d %B %Y").strftime("%Y/%m/%d")
+
+    return 'Not match'
+    
 
 
 if __name__ == "__main__":
