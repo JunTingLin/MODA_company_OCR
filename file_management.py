@@ -77,7 +77,8 @@ def pure_ocr_to_json(directory_path, filenames, output_json_path, update_progres
     """將純文字的OCR結果儲存到JSON檔案，並對含有「證書」的文件進行特殊處理"""
 
     data = []
-    touch_certificate = False  # 標記是否觸發了證書的處理流程
+    new_block = False 
+    has_touch_certificate = False
 
     for index, filename in enumerate(filenames):
         print(f"正在辨識 {filename}...")
@@ -89,29 +90,29 @@ def pure_ocr_to_json(directory_path, filenames, output_json_path, update_progres
             update_status.emit(f'正在辨識 {filename}...')
 
         file_path = os.path.join(directory_path, filename)
-        
+
+        if "_page_" not in filename or "_page_1." in filename:
+            new_block = True
+            has_touch_certificate = False
+        else:
+            new_block = False
+
         # 檢查是否處於證書處理流程中
-        if touch_certificate and "_page_" in filename and "_page_1." not in filename:
+        if has_touch_certificate and not new_block:
             # 如果當前文件名符合連續頁面的條件，則僅添加文件名
             data[-1]['filename'].append(filename)
-            # 預先檢查是否需要結束證書處理流程
-            next_filename = filenames[index + 1] if index + 1 < len(filenames) else ""
-            if "_page_1." not in next_filename and "_page_" not in next_filename:
-                touch_certificate = False
             continue
 
         # 進行OCR處理
         text_detected = detect_text_from_picture(file_path)
         if 'ISO' in text_detected and '27001' in text_detected:
             # 標記證書處理流程開始
-            touch_certificate = True
+            has_touch_certificate = True
+
 
         info = {'filename': [filename], 'ocr_data': text_detected}
         data.append(info)
 
-        # 如果當前文件是系列的最後一頁或者後面沒有文件了，重置標記
-        if "_page_1." not in filename and (index + 1 == len(filenames) or "_page_1." in filenames[index + 1]):
-            touch_certificate = False
 
     with open(output_json_path, 'w', encoding='utf-8') as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
@@ -197,4 +198,6 @@ def extract_filenames(file_paths):
 
 
 if __name__ == "__main__":
-    pure_ocr_to_json(r"C:\Users\junting\Desktop\ocr_data\27001_sample\去重覆", ["1000-16300572-147-test_doc_27001_page_1.jpg","1000-16300572-147-test_doc_27001_page_2.jpg","1000-16300572-147-test_doc_27001_page_3.jpg","1000-16300572-147-test_doc_27001_page_4.jpg","1000-23737538-415-test_doc_27001_page_1.png"], "pure_ocr_output.json")
+    # pure_ocr_to_json(r"C:\Users\junting\Desktop\ocr_data\27001_sample\去重覆", ["1000-16300572-147-test_doc_27001_page_1.jpg","1000-16300572-147-test_doc_27001_page_2.jpg","1000-16300572-147-test_doc_27001_page_3.jpg","1000-16300572-147-test_doc_27001_page_4.jpg","1000-23737538-415-test_doc_27001_page_1.png"], "pure_ocr_output.json")
+
+    print(process_data_from_json("pure_ocr_output.json"))
