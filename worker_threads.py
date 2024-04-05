@@ -2,7 +2,7 @@ from PySide2.QtCore import QThread, Signal
 from pdf_processing import process_pdf_folder
 from file_management import clear_directory, copy_files_to_output_folder, remove_pdf_files_from_folder,organize_images_by_unified_number, remove_or_replace_chinese_characters, pure_ocr_to_json, process_data_from_json, extract_filenames
 from data_processing import load_business_code_mapping, add_business_description_to_data, save_to_json, add_checkbox_status_to_data, add_qr_codes_links_to_data
-from data_processing import generate_summary, check_api_data
+from data_processing import generate_match_data, check_api_data
 import os
 from image_processing import auto_rotate_images_in_folder
 
@@ -86,16 +86,17 @@ class WorkerThread(QThread):
             print(str(e))
             # 在這裡可以發射一個新的信號來處理這個特定的錯誤情況
     
-    def run_step2(self, output_json_path, summary_output_json_path):
+    def run_step2(self, output_json_path, api_data_output_json_path):
         self.update_status.emit("正在生成摘要...")
         print("正在生成摘要...")
-        summary_data = generate_summary(output_json_path)
+        match_data = generate_match_data(output_json_path)
 
         # 呼叫 check_api_data 並傳遞更新進度和狀態的方法
-        summary_data = check_api_data(summary_data, self.update_progress, self.update_status)
+        api_data = check_api_data(match_data, self.update_progress, self.update_status)
 
         self.update_status.emit("正在儲存摘要...")
         print("正在儲存摘要...")
-        save_to_json(summary_data, summary_output_json_path)
+        save_to_json(api_data, api_data_output_json_path)
         self.update_progress.emit(100)
-        self.finished_processing.emit(summary_data)
+        self.finished_processing.emit(api_data)
+

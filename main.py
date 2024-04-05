@@ -2,7 +2,7 @@ from pdf_processing import process_pdf_folder
 from file_management import clear_directory, organize_images_by_unified_number, copy_files_to_output_folder, remove_pdf_files_from_folder, remove_or_replace_chinese_characters, pure_ocr_to_json, process_data_from_json, extract_filenames
 from data_processing import save_to_json
 from data_processing import load_business_code_mapping, add_business_description_to_data, add_checkbox_status_to_data, add_qr_codes_links_to_data
-from data_processing import generate_summary, check_api_data
+from data_processing import generate_match_data, check_api_data
 from image_processing import auto_rotate_images_in_folder
 import os
 import argparse
@@ -14,7 +14,7 @@ def main(file_paths, output_folder_path):
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = google_credentials_path
 
     output_json_full_path = os.path.join(output_folder_path, 'output.json')
-    summary_output_json_full_path = os.path.join(output_folder_path, 'summary_output.json')
+    api_data_output_json_full_path = os.path.join(output_folder_path, 'api_data.json')
     output_pure_json_path = os.path.join("pure_ocr_output.json")
     business_code_mapping_file = '公司行號營業項目代碼表.csv'
 
@@ -49,12 +49,12 @@ def main(file_paths, output_folder_path):
     print("正在歸檔...")
     organize_images_by_unified_number(output_json_full_path, output_folder_path)
 
-    # 生成摘要並檢查 API 回傳的資料
+    # 生成匹配資料並檢查 API 回傳的資料
     print("正在生成摘要...")
-    summary_data = generate_summary(output_json_full_path)
-    summary_data = check_api_data(summary_data)
+    match_data = generate_match_data(output_json_full_path)
+    api_data = check_api_data(match_data)
     print("正在儲存摘要...")
-    save_to_json(summary_data, summary_output_json_full_path)
+    save_to_json(api_data, api_data_output_json_full_path)
 
     print("處理完成！")
 
@@ -68,4 +68,4 @@ if __name__ == "__main__":
     # file_paths = args.files.split(',')  # 用逗號分隔檔案路徑
     # output_folder_path = args.output_folder
     # main(file_paths, output_folder_path)
-    main([r"C:\Users\junting\Desktop\ocr_data\支票範例\check-TT0746839.png"],r'C:\Users\junting\Desktop\ocr_result')
+    main([r"C:\Users\junting\Desktop\ocr_data\支票範例\check-TT0746839.png",r"C:\Users\junting\Desktop\ocr_data\data2\SCAN-20231215154840_1-2.pdf"],r'C:\Users\junting\Desktop\ocr_result')

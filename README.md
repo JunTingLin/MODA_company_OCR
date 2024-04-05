@@ -137,14 +137,14 @@ Output.json如上，紀錄每一張(頁)圖檔的擷取結果，多張跨頁也�
 
 ![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/aea4ffe1-c81b-4643-a4df-9ce123fd76b2)
 
-再次開啟輸出資料夾，可以發現多了一個summary_output.json
+再次開啟輸出資料夾，可以發現多了一個api_data.json
 
 ![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/fa6fc62c-0e71-4451-8dbe-56405b5cf007)
 
-summary_output.json的格式如上，以公司為單位自成一區塊，並且判斷該公司的所有表個和遠端商業司API資料「公司名稱」和「負責人姓名」是否allMatch，假如並非allMatch呈現的內容以遠端API抓到的資料為主。
+api_data.json的格式如上，以公司為單位自成一區塊，並且判斷該公司的所有表個和遠端商業司API資料「公司名稱」和「負責人姓名」是否allMatch，假如並非allMatch呈現的內容以遠端API抓到的資料為主。
 
 
-追加: 商業司api回傳也放入summary_output.json
+追加: 商業司api回傳也放入api_data.json
 
 ## 使用程式-CMD版本
 

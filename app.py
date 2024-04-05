@@ -98,7 +98,7 @@ class AppWindow(QMainWindow):
 
     def execute_step2(self):
         output_json_path = os.path.join(self.output_folder_path, 'output.json')
-        summary_output_json_path = os.path.join(self.output_folder_path, 'summary_output.json')
+        api_data_output_json_full_path = os.path.join(self.output_folder_path, 'api_data.json')
 
         # 清空列表和進度條
         self.window.label_status.setText("開始處理...")
@@ -108,7 +108,7 @@ class AppWindow(QMainWindow):
         self.worker_thread.finished_processing.connect(self.handle_processed_data)
         self.worker_thread.update_progress.connect(self.window.progressBar.setValue)
         self.worker_thread.update_status.connect(lambda message: self.window.label_status.setText(message))
-        self.worker_thread.run_step2(output_json_path, summary_output_json_path)
+        self.worker_thread.run_step2(output_json_path, api_data_output_json_full_path)
 
     def handle_processed_data(self):
         # 更新進度條到 100% 並顯示完成提示
