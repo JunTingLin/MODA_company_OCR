@@ -2,6 +2,7 @@ import json
 import csv
 import requests
 from checkbox_detector import is_checked
+from qrcode_detector import detect_qr_codes
 import os
 import pandas as pd
 
@@ -48,6 +49,13 @@ def add_checkbox_status_to_data(json_data, directory_path):
     for entry in json_data:
         if entry.get("table") == "投標廠商聲明書":
             entry["check"] = is_checked(os.path.join(directory_path, entry["filename"][0])) # 僅第一頁
+    return json_data
+
+def add_qr_codes_links_to_data(json_data, directory_path):
+    """向 JSON 數據添加 QR 碼的連結"""
+    for entry in json_data:
+        if entry.get("table") == "報價單":
+            entry["qr_code_link"] = detect_qr_codes(os.path.join(directory_path, entry["filename"][0]))
     return json_data
 
 

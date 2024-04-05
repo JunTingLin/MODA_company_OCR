@@ -99,7 +99,7 @@ def extract_company_name(text):
     company_name_match = re.search(company_name_pattern, text)
     if company_name_match:
         company_name = company_name_match.group(1).strip()
-        company_name = company_name.replace("營業名稱", "").replace("營業人名稱", "").strip()
+        company_name = company_name.replace("營業名稱", "").replace("營業人名稱", "").replace("廠商名稱","").replace(":","").strip()
         return company_name
     else:
         return 'Not match'

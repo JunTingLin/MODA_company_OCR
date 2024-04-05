@@ -1,7 +1,7 @@
 from pdf_processing import process_pdf_folder
 from file_management import clear_directory, organize_images_by_unified_number, copy_files_to_output_folder, remove_pdf_files_from_folder, remove_or_replace_chinese_characters, pure_ocr_to_json, process_data_from_json, extract_filenames
 from data_processing import save_to_json
-from data_processing import load_business_code_mapping, add_business_description_to_data, add_checkbox_status_to_data
+from data_processing import load_business_code_mapping, add_business_description_to_data, add_checkbox_status_to_data, add_qr_codes_links_to_data
 from data_processing import generate_summary, check_api_data
 from image_processing import auto_rotate_images_in_folder
 import os
@@ -44,7 +44,8 @@ def main(file_paths, output_folder_path):
     processed_data = process_data_from_json(output_pure_json_path)
     processed_data_with_desc = add_business_description_to_data(processed_data, business_code_mapping)
     processed_data_with_checkbox = add_checkbox_status_to_data(processed_data_with_desc, output_folder_path)
-    save_to_json(processed_data_with_checkbox, output_json_full_path)
+    processed_data_with_qr_codes = add_qr_codes_links_to_data(processed_data_with_checkbox, output_folder_path)
+    save_to_json(processed_data_with_qr_codes, output_json_full_path)
     print("正在歸檔...")
     organize_images_by_unified_number(output_json_full_path, output_folder_path)
 

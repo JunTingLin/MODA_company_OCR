@@ -1,7 +1,7 @@
 from PySide2.QtCore import QThread, Signal
 from pdf_processing import process_pdf_folder
 from file_management import clear_directory, copy_files_to_output_folder, remove_pdf_files_from_folder,organize_images_by_unified_number, remove_or_replace_chinese_characters, pure_ocr_to_json, process_data_from_json, extract_filenames
-from data_processing import load_business_code_mapping, add_business_description_to_data, save_to_json, add_checkbox_status_to_data
+from data_processing import load_business_code_mapping, add_business_description_to_data, save_to_json, add_checkbox_status_to_data, add_qr_codes_links_to_data
 from data_processing import generate_summary, check_api_data
 import os
 from image_processing import auto_rotate_images_in_folder
@@ -67,10 +67,11 @@ class WorkerThread(QThread):
             business_code_mapping_file = '公司行號營業項目代碼表.csv'
             business_code_mapping = load_business_code_mapping(business_code_mapping_file)
             processed_data_with_desc = add_business_description_to_data(processed_data, business_code_mapping)
-            processed_data_with_checkbox = add_checkbox_status_to_data(processed_data_with_desc, self.output_folder_path)          
+            processed_data_with_checkbox = add_checkbox_status_to_data(processed_data_with_desc, self.output_folder_path)
+            processed_data_with_qr_codes = add_qr_codes_links_to_data(processed_data_with_checkbox, self.output_folder_path)
             # 儲存數據
             output_json_path = os.path.join(self.output_folder_path, 'output.json')
-            save_to_json(processed_data_with_checkbox, output_json_path)
+            save_to_json(processed_data_with_qr_codes, output_json_path)
             # 歸檔
             self.update_status.emit("正在歸檔...")
             print("正在歸檔...")
