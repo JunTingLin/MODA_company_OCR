@@ -58,6 +58,23 @@ def add_qr_codes_links_to_data(json_data, directory_path):
             entry["qr_code_link"] = detect_qr_codes(os.path.join(directory_path, entry["filename"][0]))
     return json_data
 
+def add_cid_to_data(json_data, cid):
+    """向 JSON 數據添加統一編號"""
+    for entry in json_data:
+        entry["cid"] = cid
+    return json_data
+
+def add_company_compare_result_to_data(json_data, company_name_en):
+    """向 JSON 數據添加公司名稱英文對比結果"""
+    for entry in json_data:
+        if entry.get("table") == "ISO27001":
+            if company_name_en == entry.get("company_name"):
+                entry["compare"] = True
+            else:
+                entry["compare"] = False
+    return json_data
+
+
 
 def generate_match_data(input_json_path):
     with open(input_json_path, 'r', encoding='utf-8') as file:
@@ -147,4 +164,9 @@ def check_api_data(match_data, update_progress=None, update_status=None):
 
 
 if __name__ == "__main__":
-    print(generate_match_data(r'C:\Users\junting\Desktop\ocr_result\output.json'))
+    with open(r'C:\Users\junting\Desktop\ocr_result\output.json', 'r', encoding='utf-8') as file:
+        data = json.load(file)
+
+    result1 = add_company_compare_result_to_data(data,'Chunghwa Telecom Co., Ltd.')
+    result2 = add_cid_to_data(result1, '27553715')
+    print(result2)
