@@ -47,6 +47,44 @@ def organize_images_by_unified_number(json_file, source_folder):
             if os.path.exists(source_path):  # 確保文件存在
                 shutil.move(source_path, target_path)
 
+def rename_file_by_code(json_file, source_folder):
+    with open(json_file, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    # 初始化一個字典來維護每一組 cid-code 的計數器
+    count_dict = {}
+
+    for item in data:
+        code = item['code']
+        cid = item['cid']
+        filenames = item['filename']
+
+        # 根據 cid 和 code 建立一個唯一的鍵
+        key = f"{cid}-{code}"
+        if key not in count_dict:
+            count_dict[key] = 0
+
+        new_filenames = []
+
+        for filename in filenames:
+            # 更新計數器
+            count_dict[key] += 1
+            new_filename = f"{cid}-{code}-{count_dict[key]:03d}{os.path.splitext(filename)[-1]}"
+            new_filenames.append(new_filename)
+
+            old_filepath = os.path.join(source_folder, filename)
+            new_filepath = os.path.join(source_folder, new_filename)
+
+            # 重新命名檔案
+            os.rename(old_filepath, new_filepath)
+
+        item['filename'] = new_filenames
+
+    with open(json_file, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+
+
 def remove_or_replace_chinese_characters(directory_path, filenames):
     updated_filenames = []
     for filename in filenames:
@@ -200,4 +238,6 @@ def extract_filenames(file_paths):
 if __name__ == "__main__":
     # pure_ocr_to_json(r"C:\Users\junting\Desktop\ocr_data\27001_sample\去重覆", ["1000-16300572-147-test_doc_27001_page_1.jpg","1000-16300572-147-test_doc_27001_page_2.jpg","1000-16300572-147-test_doc_27001_page_3.jpg","1000-16300572-147-test_doc_27001_page_4.jpg","1000-23737538-415-test_doc_27001_page_1.png"], "pure_ocr_output.json")
 
-    print(process_data_from_json("pure_ocr_output.json"))
+    # print(process_data_from_json("pure_ocr_output.json"))
+
+    rename_file_by_code(r"C:\Users\junting\Desktop\ocr_result\output.json", r"C:\Users\junting\Desktop\ocr_result")
