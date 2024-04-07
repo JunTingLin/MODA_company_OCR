@@ -111,7 +111,7 @@ def remove_or_replace_chinese_characters(directory_path, filenames):
     return updated_filenames
 
 
-def pure_ocr_to_json(directory_path, filenames, output_json_path, update_progress=None, update_status=None):
+def pure_ocr_to_json(directory_path, filenames, output_json_path, updater):
     """將純文字的OCR結果儲存到JSON檔案，並對含有「證書」的文件進行特殊處理"""
 
     data = []
@@ -119,13 +119,10 @@ def pure_ocr_to_json(directory_path, filenames, output_json_path, update_progres
     has_touch_certificate = False
 
     for index, filename in enumerate(filenames):
-        print(f"正在辨識 {filename}...")
 
         # 更新進度
-        if update_progress and update_status:
-            current_progress = (index + 1) * 100 // len(filenames)
-            update_progress.emit(current_progress)
-            update_status.emit(f'正在辨識 {filename}...')
+        updater.update_progress((index + 1) * 100 // len(filenames))
+        updater.update_status(f'正在辨識 {filename}...')
 
         file_path = os.path.join(directory_path, filename)
 
@@ -157,7 +154,7 @@ def pure_ocr_to_json(directory_path, filenames, output_json_path, update_progres
 
 
 
-def process_data_from_json(ocr_json, update_progress=None, update_status=None):
+def process_data_from_json(ocr_json, updater):
     with open(ocr_json, 'r', encoding='utf-8') as file:
         data = json.load(file)
 
@@ -167,12 +164,10 @@ def process_data_from_json(ocr_json, update_progress=None, update_status=None):
     skip_next = False
 
     for index,entry in enumerate(data):
-        print(f"正在擷取 {entry['filename']}...")
 
-        if update_progress and update_status:
-            current_progress = (index + 1) * 100 // len(entry['filename'])
-            update_progress.emit(current_progress)
-            update_status.emit(f"正在擷取 {entry['filename']}...")
+        # 更新進度
+        updater.update_progress((index + 1) * 100 // len(data))
+        updater.update_status(f'正在擷取 {entry["filename"]}...')
         
         if skip_next:
             skip_next = False

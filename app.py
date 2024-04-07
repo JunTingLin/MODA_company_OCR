@@ -5,6 +5,7 @@ import json
 from PySide2.QtWidgets import QApplication, QMainWindow, QFileDialog, QListWidgetItem, QMessageBox
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtCore import QFile
+from progress_updater import GUIUpdater
 from worker_threads import WorkerThread
 
 
@@ -32,8 +33,7 @@ class AppWindow(QMainWindow):
         self.window.button_remove_file.clicked.connect(self.remove_file)
         self.window.button_choose_output_folder.clicked.connect(self.choose_output_folder)
         self.window.button_open_output_folder.clicked.connect(self.open_output_folder)
-        self.window.button_step1.clicked.connect(self.execute_step1)
-        self.window.button_step2.clicked.connect(self.execute_step2)
+        self.window.button_step1.clicked.connect(self.execute_start)
 
         # 為選擇金鑰文件的按鈕設置點擊事件
         self.window.button_choose_key_file.clicked.connect(self.choose_key_file)
@@ -79,7 +79,10 @@ class AppWindow(QMainWindow):
         else:
             QMessageBox.warning(self, "警告", "資料夾不存在或無法打開")
 
-    def execute_step1(self):
+    def execute_start(self):
+        # 初始化 GUIUpdater
+        updater = GUIUpdater(self.window.progressBar, self.window.label_status)
+
         # 獲取檔案路徑和輸出資料夾
         file_paths = [self.window.listWidget.item(i).text() for i in range(self.window.listWidget.count())]
         output_folder_path = self.window.lineEdit.text()
@@ -89,26 +92,11 @@ class AppWindow(QMainWindow):
         self.window.progressBar.setValue(0)
 
         # 初始化並啟動 WorkerThread
-        self.worker_thread = WorkerThread(output_folder_path, file_paths)
+        self.worker_thread = WorkerThread(file_paths, output_folder_path, updater)
         self.worker_thread.error_occurred.connect(self.handle_error)
         self.worker_thread.finished_processing.connect(self.handle_processed_data) 
-        self.worker_thread.update_progress.connect(self.window.progressBar.setValue)
-        self.worker_thread.update_status.connect(lambda message: self.window.label_status.setText(message))
         self.worker_thread.start()
 
-    def execute_step2(self):
-        output_json_path = os.path.join(self.output_folder_path, 'output.json')
-        api_data_output_json_full_path = os.path.join(self.output_folder_path, 'api_data.json')
-
-        # 清空列表和進度條
-        self.window.label_status.setText("開始處理...")
-        self.window.progressBar.setValue(0)
-
-        self.worker_thread = WorkerThread(self.output_folder_path, [])
-        self.worker_thread.finished_processing.connect(self.handle_processed_data)
-        self.worker_thread.update_progress.connect(self.window.progressBar.setValue)
-        self.worker_thread.update_status.connect(lambda message: self.window.label_status.setText(message))
-        self.worker_thread.run_step2(output_json_path, api_data_output_json_full_path)
 
     def handle_processed_data(self):
         # 更新進度條到 100% 並顯示完成提示
