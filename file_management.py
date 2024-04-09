@@ -31,7 +31,10 @@ def organize_images_by_unified_number(json_file, source_folder):
         data = json.load(file)
 
     for entry in data:
-        unified_number = entry.get("ocr_cid")
+        if entry.get("cid"):
+            unified_number = entry.get("cid")
+        else:
+            unified_number = entry.get("ocr_cid")
         if not unified_number or unified_number == "Not match":
             continue
         filenames = entry.get("filename", [])
@@ -56,7 +59,9 @@ def rename_file_by_code(json_file, source_folder):
 
     for item in data:
         code = item['code']
-        cid = item['cid']
+        cid = item.get('cid') or item.get('ocr_cid')
+        if not cid:
+            continue
         filenames = item['filename']
 
         # 根據 cid 和 code 建立一個唯一的鍵
