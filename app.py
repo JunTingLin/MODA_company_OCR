@@ -33,7 +33,11 @@ class AppWindow(QMainWindow):
         self.window.button_remove_file.clicked.connect(self.remove_file)
         self.window.button_choose_output_folder.clicked.connect(self.choose_output_folder)
         self.window.button_open_output_folder.clicked.connect(self.open_output_folder)
-        self.window.button_step1.clicked.connect(self.execute_start)
+        self.window.button_run.clicked.connect(self.execute_start)
+
+        # 設置核取框的點擊事件
+        self.window.checkBox_cid.stateChanged.connect(self.update_cid_state)
+        self.window.checkBox_company_name_en.stateChanged.connect(self.update_company_name_en_state)
 
         # 為選擇金鑰文件的按鈕設置點擊事件
         self.window.button_choose_key_file.clicked.connect(self.choose_key_file)
@@ -46,10 +50,13 @@ class AppWindow(QMainWindow):
         self.window.listWidget.clear()
         self.window.label_status.setText("")
 
+        self.update_cid_state()
+        self.update_company_name_en_state()
+
         # 初始化輸出資料夾路徑
         desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
         self.output_folder_path = os.path.join(desktop_path, "ocr_result")
-        self.window.lineEdit.setText(self.output_folder_path)
+        self.window.lineEdit_output_folder_path.setText(self.output_folder_path)
 
     def choose_file(self):
         file_paths, _ = QFileDialog.getOpenFileNames(self, "選擇文件", "", "所有支持的檔案 (*.png *.jpg *.jpeg *.pdf);;圖片檔案 (*.png *.jpg *.jpeg);;PDF 檔案 (*.pdf)")
@@ -63,10 +70,10 @@ class AppWindow(QMainWindow):
             self.window.listWidget.takeItem(self.window.listWidget.row(selected_item))
 
     def choose_output_folder(self):
-        folder_path = QFileDialog.getExistingDirectory(self, "選擇輸出資料夾")
-        if folder_path:
-            self.window.lineEdit.setText(folder_path)
-            self.output_folder_path = folder_path
+        output_folder_path = QFileDialog.getExistingDirectory(self, "選擇輸出資料夾")
+        if output_folder_path:
+            self.window.lineEdit_output_folder_path.setText(output_folder_path)
+            self.output_folder_path = output_folder_path
 
     def open_output_folder(self):
         if os.path.exists(self.output_folder_path):
@@ -79,13 +86,22 @@ class AppWindow(QMainWindow):
         else:
             QMessageBox.warning(self, "警告", "資料夾不存在或無法打開")
 
+    def update_cid_state(self):
+        # 根據checkBox_cid的狀態設定lineEdit_cid的可用性
+        is_checked = self.window.checkBox_cid.isChecked()
+        self.window.lineEdit_cid.setEnabled(is_checked)
+
+    def update_company_name_en_state(self):
+        is_checked = self.window.checkBox_company_name_en.isChecked()
+        self.window.lineEdit_company_name_en.setEnabled(is_checked)
+
     def execute_start(self):
         # 初始化 GUIUpdater
         updater = GUIUpdater(self.window.progressBar, self.window.label_status)
 
         # 獲取檔案路徑和輸出資料夾
         file_paths = [self.window.listWidget.item(i).text() for i in range(self.window.listWidget.count())]
-        output_folder_path = self.window.lineEdit.text()
+        output_folder_path = self.window.lineEdit_output_folder_path.text()
 
         # 清空列表和進度條
         self.window.label_status.setText("開始處理...")

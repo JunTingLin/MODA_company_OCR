@@ -2,35 +2,43 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>1050</width>
-    <height>600</height>
+    <height>800</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>1050</width>
-    <height>600</height>
+    <height>800</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>1050</width>
-    <height>600</height>
+    <height>800</height>
    </size>
   </property>
+  <property name="font">
+   <font>
+    <pointsize>11</pointsize>
+   </font>
+  </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>多功能智慧文字辨識 OCR 2.0</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QProgressBar" name="progressBar">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>530</y>
+      <y>730</y>
       <width>1011</width>
       <height>23</height>
      </rect>
@@ -70,7 +78,7 @@
      <rect>
       <x>270</x>
       <y>130</y>
-      <width>261</width>
+      <width>341</width>
       <height>16</height>
      </rect>
     </property>
@@ -101,10 +109,10 @@
      </rect>
     </property>
     <property name="text">
-     <string>輸出位置</string>
+     <string>輸出位置 (-o)</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit">
+   <widget class="QLineEdit" name="lineEdit_output_folder_path">
     <property name="geometry">
      <rect>
       <x>270</x>
@@ -130,30 +138,17 @@
      <enum>Qt::Vertical</enum>
     </property>
    </widget>
-   <widget class="QPushButton" name="button_step1">
+   <widget class="QPushButton" name="button_run">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>460</y>
+      <x>260</x>
+      <y>660</y>
       <width>201</width>
       <height>51</height>
      </rect>
     </property>
     <property name="text">
-     <string>Step1. 辨識 and 歸檔</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="button_step2">
-    <property name="geometry">
-     <rect>
-      <x>440</x>
-      <y>460</y>
-      <width>201</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Step2. 檢測一致性</string>
+     <string>執行</string>
     </property>
    </widget>
    <widget class="QListWidget" name="listWidget">
@@ -192,8 +187,8 @@
    <widget class="QPushButton" name="button_open_output_folder">
     <property name="geometry">
      <rect>
-      <x>790</x>
-      <y>460</y>
+      <x>780</x>
+      <y>660</y>
       <width>201</width>
       <height>51</height>
      </rect>
@@ -206,7 +201,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>560</y>
+      <y>760</y>
       <width>981</width>
       <height>20</height>
      </rect>
@@ -223,6 +218,13 @@
       <width>201</width>
       <height>51</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
     </property>
     <property name="text">
      <string>選擇金鑰檔案</string>
@@ -252,6 +254,122 @@
     </property>
     <property name="text">
      <string>Google服務帳戶的金鑰(.json)</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_cid">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>430</y>
+      <width>721</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="dragEnabled">
+     <bool>false</bool>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+    <property name="clearButtonEnabled">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_company_name_en">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>490</y>
+      <width>721</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_archive">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>560</y>
+      <width>161</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>系統自動分類 (-a)</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_api">
+    <property name="geometry">
+     <rect>
+      <x>250</x>
+      <y>560</y>
+      <width>171</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>查商業司API (-api)</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_rename">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>560</y>
+      <width>161</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>檔名重新命名 (-f)</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_summary">
+    <property name="geometry">
+     <rect>
+      <x>640</x>
+      <y>560</y>
+      <width>151</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>統計摘要 (-s)</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_cid">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>440</y>
+      <width>171</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>統一編號 (-c) :</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_company_name_en">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>500</y>
+      <width>181</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>公司英文名稱 (-e) :</string>
     </property>
    </widget>
   </widget>
