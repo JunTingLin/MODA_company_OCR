@@ -99,16 +99,25 @@ class AppWindow(QMainWindow):
         # 初始化 GUIUpdater
         updater = GUIUpdater(self.window.progressBar, self.window.label_status)
 
-        # 獲取檔案路徑和輸出資料夾
+        # 獲取參數
         file_paths = [self.window.listWidget.item(i).text() for i in range(self.window.listWidget.count())]
         output_folder_path = self.window.lineEdit_output_folder_path.text()
+        cid = self.window.lineEdit_cid.text() if self.window.checkBox_cid.isChecked() else None
+        company_name_en = self.window.lineEdit_company_name_en.text() if self.window.checkBox_company_name_en.isChecked() else None
+        archive = self.window.checkBox_archive.isChecked()
+        call_api = self.window.checkBox_api.isChecked()
+        rename_files = self.window.checkBox_rename.isChecked()
+        summary = self.window.checkBox_summary.isChecked()
 
         # 清空列表和進度條
         self.window.label_status.setText("開始處理...")
         self.window.progressBar.setValue(0)
 
         # 初始化並啟動 WorkerThread
-        self.worker_thread = WorkerThread(file_paths, output_folder_path, updater)
+        self.worker_thread = WorkerThread(
+            file_paths, output_folder_path, updater,
+            cid, archive, call_api, rename_files, summary, company_name_en
+            )
         self.worker_thread.error_occurred.connect(self.handle_error)
         self.worker_thread.finished_processing.connect(self.handle_processed_data) 
         self.worker_thread.start()
