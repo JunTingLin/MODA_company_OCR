@@ -58,7 +58,7 @@ def extract_info(text,filenames):
         info['ocr_data'] = text
         info['table'] = 'ISO27001'
         info['company_name'] = extract_english_company_name(text)
-        info['compare'] = ''
+        # info['compare'] = ''
         info['expiry_date'] = extract_27001_valid_date(text)
     elif '電腦軟體投標廠商報價單' in text:
         info['code'] = '06'

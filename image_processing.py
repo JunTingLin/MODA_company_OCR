@@ -4,7 +4,7 @@ from PIL import Image
 import re
 import os
 
-def auto_rotate_images_in_folder(folder_path, filenames, updater):
+def auto_rotate_images_in_folder(folder_path, filenames, updater=None):
     total_files = len(filenames)
 
     for index, filename in enumerate(filenames):
@@ -19,12 +19,12 @@ def auto_rotate_images_in_folder(folder_path, filenames, updater):
             if angle != 0:
                 rotated_image = image.rotate(-angle, expand=True)
                 rotated_image.save(filepath)  # 覆蓋原始圖片或保存為新的文件
-                updater.update_status(f"{filename} 已旋轉...")
+                if updater: updater.update_status(f"{filename} 已旋轉...")
             else:
-                updater.update_status(f"{filename} 無需旋轉...")
+                if updater: updater.update_status(f"{filename} 無需旋轉...")
 
         except Exception as e:
-            updater.update_status(f"處理 {filename} 時出錯: {e}")
+            if updater: updater.update_status(f"處理 {filename} 時出錯: {e}")
         
-        updater.update_progress((index + 1) * 100 // total_files)
+        if updater: updater.update_progress((index + 1) * 100 // total_files)
 

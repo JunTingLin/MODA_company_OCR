@@ -116,7 +116,7 @@ def remove_or_replace_chinese_characters(directory_path, filenames):
     return updated_filenames
 
 
-def pure_ocr_to_json(directory_path, filenames, output_json_path, updater):
+def pure_ocr_to_json(directory_path, filenames, output_json_path, updater=None):
     """將純文字的OCR結果儲存到JSON檔案，並對含有「證書」的文件進行特殊處理"""
 
     data = []
@@ -126,8 +126,9 @@ def pure_ocr_to_json(directory_path, filenames, output_json_path, updater):
     for index, filename in enumerate(filenames):
 
         # 更新進度
-        updater.update_progress((index + 1) * 100 // len(filenames))
-        updater.update_status(f'正在辨識 {filename}...')
+        if updater:
+            updater.update_progress((index + 1) * 100 // len(filenames))
+            updater.update_status(f'正在辨識 {filename}...')
 
         file_path = os.path.join(directory_path, filename)
 
@@ -159,7 +160,7 @@ def pure_ocr_to_json(directory_path, filenames, output_json_path, updater):
 
 
 
-def process_data_from_json(ocr_json, updater):
+def process_data_from_json(ocr_json, updater=None):
     with open(ocr_json, 'r', encoding='utf-8') as file:
         data = json.load(file)
 
@@ -171,8 +172,9 @@ def process_data_from_json(ocr_json, updater):
     for index,entry in enumerate(data):
 
         # 更新進度
-        updater.update_progress((index + 1) * 100 // len(data))
-        updater.update_status(f'正在擷取 {entry["filename"]}...')
+        if updater:
+            updater.update_progress((index + 1) * 100 // len(data))
+            updater.update_status(f'正在擷取 {entry["filename"]}...')
         
         if skip_next:
             skip_next = False
@@ -238,6 +240,6 @@ def extract_filenames(file_paths):
 if __name__ == "__main__":
     # pure_ocr_to_json(r"C:\Users\junting\Desktop\ocr_data\27001_sample\去重覆", ["1000-16300572-147-test_doc_27001_page_1.jpg","1000-16300572-147-test_doc_27001_page_2.jpg","1000-16300572-147-test_doc_27001_page_3.jpg","1000-16300572-147-test_doc_27001_page_4.jpg","1000-23737538-415-test_doc_27001_page_1.png"], "pure_ocr_output.json")
 
-    # print(process_data_from_json("pure_ocr_output.json"))
+    print(process_data_from_json(r"temp/pure_ocr_output4.json"))
 
-    rename_file_by_code(r"C:\Users\junting\Desktop\ocr_result\output.json", r"C:\Users\junting\Desktop\ocr_result")
+    # rename_file_by_code(r"C:\Users\junting\Desktop\ocr_result\output.json", r"C:\Users\junting\Desktop\ocr_result")

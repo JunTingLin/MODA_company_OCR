@@ -120,7 +120,7 @@ def generate_match_data(input_json_path):
     return list(company_summary.values())
 
 
-def check_api_data(match_data, updater):
+def check_api_data(match_data, updater=None):
     for i, item in enumerate(match_data):
         unified_number = item['ocr_cid']
 
@@ -128,8 +128,9 @@ def check_api_data(match_data, updater):
         if unified_number is None:
             continue
 
-        updater.update_status(f"正在比對 {unified_number} 公司的資料是否相符...")
-        updater.update_progress((i + 1) * 100 // len(match_data))
+        if updater:
+            updater.update_status(f"正在比對 {unified_number} 公司的資料是否相符...")
+            updater.update_progress((i + 1) * 100 // len(match_data))
 
         response = requests.get(f"https://data.gcis.nat.gov.tw/od/data/api/5F64D864-61CB-4D0D-8AD9-492047CC1EA6?$format=json&$filter=Business_Accounting_NO eq {unified_number}&$skip=0&$top=1")
         # 如果回傳狀態碼為200且回傳內容不為空
