@@ -12,7 +12,7 @@ from data_processing import (
     load_business_code_mapping, add_business_description_to_data,
     save_to_json, add_checkbox_status_to_data, add_qr_codes_links_to_data,
     generate_match_data, check_api_data, add_company_compare_result_to_data,
-    add_cid_to_data
+    add_cid_to_data, group_by_cid
 )
 
 import os
@@ -39,6 +39,7 @@ class WorkerThread(QThread):
 
         self.output_json_path = os.path.join(self.output_folder_path, 'output.json')
         self.api_data_output_json_path = os.path.join(self.output_folder_path, 'api_data.json')
+        self.summary_data_output_json_path = os.path.join(self.output_folder_path, 'summary.json')
         self.output_pure_json_path = "pure_ocr_output.json"
         self.business_code_mapping_file = '公司行號營業項目代碼表.csv'
 
@@ -108,6 +109,12 @@ class WorkerThread(QThread):
                 api_data = check_api_data(match_data, self.updater)
                 self.updater.update_status("正在儲存匹配狀況(api_data.json)...")
                 save_to_json(api_data, self.api_data_output_json_path)
+            
+            if self.summary:
+                self.updater.update_status("正在儲存摘要資料...")
+                summary_data = group_by_cid(self.output_json_path)
+                save_to_json(summary_data, self.summary_data_output_json_path)
+
 
             # 發射處理完畢
             self.finished_processing.emit()

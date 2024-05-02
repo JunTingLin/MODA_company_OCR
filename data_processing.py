@@ -80,7 +80,7 @@ def generate_match_data(input_json_path):
     with open(input_json_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
 
-    company_summary = {}
+    match_data = {}
 
     for entry in data:
         if entry.get("company_name") is None or entry.get("boss_name") is None:
@@ -97,9 +97,9 @@ def generate_match_data(input_json_path):
         boss_name = entry.get("boss_name").strip()
 
         # 檢查統一編號是否已經存在於摘要字典中
-        if unified_number not in company_summary:
+        if unified_number not in match_data:
             # 如果不存在，則新增一個新的摘要記錄
-            company_summary[unified_number] = {
+            match_data[unified_number] = {
                 "ocr_cid": unified_number,
                 "company_name": company_name,
                 "boss_name": boss_name,
@@ -107,17 +107,17 @@ def generate_match_data(input_json_path):
             }
         else:
             # 如果該統一編號已存在，檢查名稱是否與已儲存的名稱相符
-            if company_summary[unified_number]["company_name"] != company_name or company_name == "Not match":
+            if match_data[unified_number]["company_name"] != company_name or company_name == "Not match":
                 # 如果不匹配，將 allMatch 標誌設為 False
-                company_summary[unified_number]["allMatch"] = False
+                match_data[unified_number]["allMatch"] = False
             # 檢查負責人姓名是否與已儲存的姓名相符
-            if company_summary[unified_number]["boss_name"] != boss_name or boss_name == "Not match":
+            if match_data[unified_number]["boss_name"] != boss_name or boss_name == "Not match":
                 # 如果不匹配，將 allMatch 標誌設為 False
-                company_summary[unified_number]["allMatch"] = False
+                match_data[unified_number]["allMatch"] = False
             
 
     # 將摘要字典轉換成列表並返回
-    return list(company_summary.values())
+    return list(match_data.values())
 
 
 def check_api_data(match_data, updater=None):
@@ -160,11 +160,35 @@ def check_api_data(match_data, updater=None):
 
     return match_data
 
-
-if __name__ == "__main__":
-    with open(r'C:\Users\junting\Desktop\ocr_result\output.json', 'r', encoding='utf-8') as file:
+def group_by_cid(input_json_path):
+    # 讀取 JSON 資料
+    with open(input_json_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
 
-    result1 = add_company_compare_result_to_data(data,'Chunghwa Telecom Co., Ltd.')
-    result2 = add_cid_to_data(result1, '27553715')
-    print(result2)
+    # 初始化統計字典
+    summary = {}
+
+    # 遍歷每一個文件項目
+    for item in data:
+        cid = item.get('cid', 'undefined')
+        code = str(item.get('code', '00'))  # 確保 code 是字符串格式
+
+        if cid not in summary:
+            # 初始化該 cid 的統計資訊
+            summary[cid] = {f"{i:02}": {"count": 0, "filename": []} for i in range(7)}
+
+        # 添加文件名至對應的 code 分類下，確保 'filename' 鍵存在
+        if 'filename' in item:
+            summary[cid][code]['filename'].append(item['filename'])
+            # summary[cid][code]['count'] += len(item['filename'])
+            summary[cid][code]['count'] += 1 
+
+    # 將摘要字典轉換成列表並返回
+    return summary
+
+
+if __name__ == "__main__":
+    result = group_by_cid(r"C:\Users\junting\Desktop\ocr_result\output.json")
+    print(result)
+
+    
