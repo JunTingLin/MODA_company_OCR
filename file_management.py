@@ -13,11 +13,45 @@ def clear_directory(directory_path):
         shutil.rmtree(directory_path)
     os.makedirs(directory_path)
 
-def copy_files_to_output_folder(file_paths, output_folder):
-    """將文件從集合中複製到輸出資料夾"""
+def copy_files_to_folder(file_paths, folder_path):
+    """將文件從集合中複製到指定資料夾"""
     for file_path in file_paths:
         if os.path.isfile(file_path):
-            shutil.copy(file_path, output_folder)
+            shutil.copy(file_path, folder_path)
+
+def move_json_files_to_subfolder(folder_path, json_paths):
+    """將指定的 JSON 文件移動到資料夾中唯一的子資料夾。如果有多於一個子資料夾，則不執行任何操作。"""
+    # 檢查資料夾中的子資料夾數量
+    subfolders = [f.path for f in os.scandir(folder_path) if f.is_dir()]
+    
+    # 如果有且僅有一個子資料夾
+    if len(subfolders) == 1:
+        subfolder_path = subfolders[0]
+        # 將所有 JSON 文件移動到該子資料夾
+        for json_path in json_paths:
+            if os.path.exists(json_path):
+                shutil.move(json_path, subfolder_path)
+
+def copy_and_replace(work_dir, output_dir):
+    # 確保工作目錄和輸出目錄存在
+    if not os.path.exists(work_dir) or not os.path.exists(output_dir):
+        print("One of the directories does not exist.")
+        return
+    
+    # 遍歷工作目錄中的所有檔案和資料夾
+    for item in os.listdir(work_dir):
+        work_path = os.path.join(work_dir, item)
+        output_path = os.path.join(output_dir, item)
+
+        # 如果是資料夾，並且在輸出目錄中存在相同名稱的資料夾，則先刪除輸出目錄中的資料夾
+        if os.path.isdir(work_path):
+            if os.path.exists(output_path):
+                shutil.rmtree(output_path)
+            shutil.copytree(work_path, output_path)
+        # 如果是檔案，直接複製並取代到輸出目錄
+        else:
+            shutil.copy2(work_path, output_path)
+
 
 def remove_pdf_files_from_folder(folder_path):
     """從資料夾中刪除所有 PDF 文件"""
@@ -238,8 +272,4 @@ def extract_filenames(file_paths):
 
 
 if __name__ == "__main__":
-    # pure_ocr_to_json(r"C:\Users\junting\Desktop\ocr_data\27001_sample\去重覆", ["1000-16300572-147-test_doc_27001_page_1.jpg","1000-16300572-147-test_doc_27001_page_2.jpg","1000-16300572-147-test_doc_27001_page_3.jpg","1000-16300572-147-test_doc_27001_page_4.jpg","1000-23737538-415-test_doc_27001_page_1.png"], "pure_ocr_output.json")
-
-    print(process_data_from_json(r"temp/pure_ocr_output4.json"))
-
-    # rename_file_by_code(r"C:\Users\junting\Desktop\ocr_result\output.json", r"C:\Users\junting\Desktop\ocr_result")
+    move_json_files_to_subfolder("working", ["working/output.json", "working/api_data.json", "working/summary.json"])

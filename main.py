@@ -1,6 +1,7 @@
 import argparse
 from progress_updater import CommandLineUpdater
 from worker_threads import WorkerThread
+import os
 
 
 if __name__ == "__main__":
@@ -17,6 +18,15 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     updater = CommandLineUpdater()
+
+    # 設置 Google 應用認證
+    try:
+        google_credentials_path = 'service-account-file.json'
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = google_credentials_path
+    except FileNotFoundError:
+        print("未找到 Google 應用認證文件！")
+        exit(1)
+    
     # 解析命令列參數...
     worker = WorkerThread(
         args.files, args.output_folder, updater,
