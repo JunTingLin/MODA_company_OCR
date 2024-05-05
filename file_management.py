@@ -221,7 +221,10 @@ def process_data_from_json(ocr_json, updater=None):
             if index + 1 < len(data):
                 next_entry = data[index + 1]
                 next_unified_number = extract_unified_number(next_entry["ocr_data"])
-            if index + 1 < len(data) and (current_unified_number == next_unified_number or next_unified_number=='Not match') and "數位發展部數位產業署投標廠商聲明書" not in next_entry["ocr_data"] and "營業人銷售額與稅額申報書清單" not in next_entry["ocr_data"] and "營業人銷售額與稅額申報書" not in next_entry["ocr_data"]:
+            if index + 1 < len(data) and (current_unified_number == next_unified_number or next_unified_number=='Not match') \
+                    and "數位發展部數位產業署投標廠商聲明書" not in next_entry["ocr_data"] \
+                    and "營業人銷售額與稅額申報書清單" not in next_entry["ocr_data"] \
+                    and "營業人銷售額與稅額申報書" not in next_entry["ocr_data"]:
                 # 合併下一頁
                 combined_text += next_entry["ocr_data"] + '\n'
                 filenames.extend(next_entry["filename"])
@@ -242,9 +245,37 @@ def process_data_from_json(ocr_json, updater=None):
             filenames.extend(entry["filename"])
             if index + 1 < len(data):
                 next_entry = data[index + 1]
+            if index + 1 < len(data) and "附註" in next_entry["ocr_data"]:
+                next_entry = data[index + 1]
                 combined_text += next_entry["ocr_data"] + '\n'
                 filenames.extend(next_entry["filename"])
                 skip_next = True
+                extracted_info = extract_info(combined_text, filenames)
+                processed_data.append(extracted_info)
+                combined_text = ""
+                filenames = []
+            else:
+                extracted_info = extract_info(combined_text, filenames)
+                processed_data.append(extracted_info)
+                combined_text = ""
+                filenames = []
+
+        elif "附註" in entry["ocr_data"]:
+            # 投標廠商聲明書處理邏輯(順序顛倒)
+            combined_text += entry["ocr_data"] + '\n'
+            filenames.extend(entry["filename"])
+            if index + 1 < len(data):
+                next_entry = data[index + 1]
+            if index + 1 < len(data) and "數位發展部數位產業署投標廠商聲明書" in next_entry["ocr_data"]:
+                next_entry = data[index + 1]
+                combined_text += next_entry["ocr_data"] + '\n'
+                filenames.extend(next_entry["filename"])
+                skip_next = True
+                extracted_info = extract_info(combined_text, filenames)
+                processed_data.append(extracted_info)
+                combined_text = ""
+                filenames = []
+            else:
                 extracted_info = extract_info(combined_text, filenames)
                 processed_data.append(extracted_info)
                 combined_text = ""

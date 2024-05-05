@@ -91,9 +91,8 @@ def generate_match_data(input_json_path):
         # 跳過統一編號為 None 或無效的記錄
         if (not unified_number) or  (unified_number == "Not match") or (len(unified_number) != 8):
             continue
-        # 獲取每筆資料的公司名稱，如果都沒有找到則預設為 "Not match"
+
         company_name = entry.get("company_name").strip()
-        # 獲取每筆資料的負責人姓名，如果沒有找到則預設為 "Not match"
         boss_name = entry.get("boss_name").strip()
 
         # 檢查統一編號是否已經存在於摘要字典中
@@ -101,38 +100,37 @@ def generate_match_data(input_json_path):
             # 如果不存在，則新增一個新的摘要記錄
             match_data[unified_number] = {
                 "ocr_cid": unified_number,
-                "company_name": company_name,
-                "boss_name": boss_name,
+                "company_name": {company_name},
+                "boss_name": {boss_name},
                 "allMatch": True  # 設定一個標誌，表示目前為止名稱與編號是匹配的
             }
         else:
-            # 如果該統一編號已存在，檢查名稱是否與已儲存的名稱相符
-            if match_data[unified_number]["company_name"] != company_name or company_name == "Not match":
-                # 如果不匹配，將 allMatch 標誌設為 False
+            match_data[unified_number]["company_name"].add(company_name)
+            match_data[unified_number]["boss_name"].add(boss_name)
+            # 檢查集合是否包含多個不同的名稱
+            if len(match_data[unified_number]["company_name"]) > 1 or len(match_data[unified_number]["boss_name"]) > 1:
                 match_data[unified_number]["allMatch"] = False
-            # 檢查負責人姓名是否與已儲存的姓名相符
-            if match_data[unified_number]["boss_name"] != boss_name or boss_name == "Not match":
-                # 如果不匹配，將 allMatch 標誌設為 False
-                match_data[unified_number]["allMatch"] = False
-            
 
-    # 將摘要字典轉換成列表並返回
-    return list(match_data.values())
+    # 轉換集合為列表
+    for key in match_data:
+        match_data[key]["company_name"] = list(match_data[key]["company_name"])
+        match_data[key]["boss_name"] = list(match_data[key]["boss_name"])
+
+    return match_data
 
 
 def check_api_data(match_data, updater=None):
-    for i, item in enumerate(match_data):
-        unified_number = item['ocr_cid']
+    keys = list(match_data.keys())
+    total = len(keys)
 
-        # 如果統一編號為None，則跳過當前迭代
-        if unified_number is None:
-            continue
+    for i, key in enumerate(keys):
+        item = match_data[key]
 
         if updater:
-            updater.update_status(f"正在比對 {unified_number} 公司的資料是否相符...")
-            updater.update_progress((i + 1) * 100 // len(match_data))
+            updater.update_status(f"正在比對 {key} 公司的資料是否相符...")
+            updater.update_progress((i + 1) * 100 // total)
 
-        response = requests.get(f"https://data.gcis.nat.gov.tw/od/data/api/5F64D864-61CB-4D0D-8AD9-492047CC1EA6?$format=json&$filter=Business_Accounting_NO eq {unified_number}&$skip=0&$top=1")
+        response = requests.get(f"https://data.gcis.nat.gov.tw/od/data/api/5F64D864-61CB-4D0D-8AD9-492047CC1EA6?$format=json&$filter=Business_Accounting_NO eq {key}&$skip=0&$top=1")
         # 如果回傳狀態碼為200且回傳內容不為空
         if response.status_code == 200 and response.content.strip():
             try:
@@ -142,15 +140,14 @@ def check_api_data(match_data, updater=None):
                 api_company_name = api_data[0]['Company_Name'] if api_data else 'Not match'
                 api_responsible_name = api_data[0]['Responsible_Name'] if api_data else 'Not match'
                 
-                # 比對公司名稱
-                if api_company_name == 'Not match' or item["company_name"] != api_company_name:
-                    item["company_name"] = api_company_name
-                    item["allMatch"] = False
-        
-                # 比對負責人姓名
-                if api_responsible_name == 'Not match' or item["boss_name"] != api_responsible_name:
-                    item["boss_name"] = api_responsible_name
-                    item["allMatch"] = False
+                if item["allMatch"] == True:
+                    # 比對公司名稱
+                    if api_company_name != 'Not match' and api_company_name not in item["company_name"]:
+                        item["allMatch"] = False
+            
+                    # 比對負責人姓名
+                    if api_responsible_name != 'Not match' and api_responsible_name not in item["boss_name"]:
+                        item["allMatch"] = False
             except json.JSONDecodeError:
                 item["api"] = "Error in API response"
                 item["allMatch"] = False
@@ -188,7 +185,8 @@ def group_by_cid(input_json_path):
 
 
 if __name__ == "__main__":
-    result = group_by_cid(r"C:\Users\junting\Desktop\ocr_result\output.json")
+    result = generate_match_data(r"C:\Users\junting\Desktop\ocr_result\27750379\output.json")
+    result = check_api_data(result)
     print(result)
 
     
