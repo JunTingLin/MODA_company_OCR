@@ -214,7 +214,7 @@ def process_data_from_json(ocr_json, updater=None):
             skip_next = False
             continue
 
-        if "公司基本資料" in entry["ocr_data"] and "商工登記公示資料查詢服務" in entry["ocr_data"]:
+        if "公司基本資料" in entry["ocr_data"] and "登記公示資料查詢服務" in entry["ocr_data"]:
             current_unified_number = extract_unified_number(entry["ocr_data"])
             combined_text += entry["ocr_data"] + '\n'
             filenames.extend(entry["filename"])

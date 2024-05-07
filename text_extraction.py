@@ -6,7 +6,7 @@ def extract_info(text,filenames):
     """從文字中提取關鍵信"""
     info = {}
 
-    if "基本資料" in text and "商工登記公示資料查詢服務" in text:
+    if "基本資料" in text and "登記公示資料查詢服務" in text:
         info['code'] = '01'
         info['filename'] = filenames
         info['ocr_data'] = text
@@ -99,7 +99,13 @@ def extract_company_name(text):
     company_name_match = re.search(company_name_pattern, text)
     if company_name_match:
         company_name = company_name_match.group(1).strip()
-        company_name = company_name.replace("營業名稱", "").replace("營業人名稱", "").replace("廠商名稱","").replace(":","").strip()
+        company_name = company_name\
+            .replace("營業名稱", "")\
+            .replace("營業人名稱", "")\
+            .replace("營業人名 稱", "")\
+            .replace("廠商名稱","")\
+            .replace(":","")\
+            .strip()
         return company_name
     else:
         return 'Not match'
@@ -210,7 +216,9 @@ def extract_bank_name(text):
 
 def extract_branch_name(text):
     branch_names = load_unique_names('分支機構名稱')
-    for branch_name in branch_names:
+    # 對分行名稱按長度進行降序排序
+    sorted_branch_names = sorted(branch_names, key=len, reverse=True)
+    for branch_name in sorted_branch_names:
         if branch_name in text:
             return branch_name
     return 'Not match'
@@ -243,11 +251,20 @@ def extract_payee_name(text):
     return payee_match.group(1) if payee_match else 'Not match'
 
 def extract_amount(text):
-    # 使用正規表示式來匹配至少包含一個逗號的金額格式
-    amount_pattern = r"\d{1,3},\d{3}(,\d{3})*"
-    amount_match = re.search(amount_pattern, text)
-    
-    return amount_match.group() if amount_match else 'Not match'
+    # 定義兩種金額的匹配模式
+    patterns = [
+        r"\d{1,3},\d{3}(,\d{3})*",  # 使用逗號分隔的金額格式
+        r"\d{1,3}\.\d{3}(\.\d{3})*"  # 使用點分隔的金額格式
+    ]
+
+    for pattern in patterns:
+        amount_match = re.search(pattern, text)
+        if amount_match:
+            # 移除匹配到的金額中的分隔符號，無論是逗號還是點
+            return amount_match.group().replace(',', '').replace('.', '')
+
+    # 如果兩種模式都沒有匹配成功，返回'Not match'
+    return 'Not match'
 
 def extract_check_date(text):
     date_pattern = r"(\d{2,3}\s*年\s*\d{1,2}\s*月\s*\d{1,2}\s*日)"
@@ -262,7 +279,7 @@ def extract_check_date(text):
 
 def extract_serial(text):
     # 匹配英文字母開頭，數字結尾的序列，直到遇到換行符為止
-    pattern_alpha_numeric = r'[A-Za-z]{1,3}\s*\d{4,}'
+    pattern_alpha_numeric = r'[A-Za-z]{1,3} *\d{4,}'
     match_alpha_numeric = re.search(pattern_alpha_numeric, text)
     
     if match_alpha_numeric:
@@ -313,5 +330,8 @@ def extract_27001_valid_date(text):
 
 
 if __name__ == "__main__":
-    result =extract_bank_name('')
+    result1 = extract_amount("Bar\nation\n本行支票\nal Ba\nerno\nshin 10\nak Tais\nal Bank\national\nntern\nshin\nak Tag\nal Bay\nationa\nntern\nshin I\nk Tais\nBanke\nona\nnational Bank Talshin International Bank\nInternational Bank Taishin International\naishin International Bank Taishin Interna\nank Taishin International Bank Taishin i\nPal Bank Taishin International Bank Talehi\n支\nnationa\nS\n示\nional Bank Taishin International Bank\nrnational Bank Talshin International\nnternational Bank Taishin Interna\nhin International Bank\nOk Tairin Internatio\nnal Bar Taish 票\n支付\nnation PAY TO THE ORDER OF.\nnterne\nshin Iternational\nTan Intern\n數位發展部數位產業署\n幣\nBa\nBNEW TAIWAN DOLLARS.\nation\nternational Bank\nhin\nhal Ban\nnation\nnterna\nNT$ 500,000\n伍拾萬元整\n台新國際商業銀行\nShunt Taighin International Bank BAR\nk -\nal Bank\national Ba\nDal Bank Tais\nVernational Bank Taishin International Bank Tals\nin International Bank Taishin International Bank\nnternationak Taishin International Bank Taishin Internation\nshin International Bank Taishin International Bank Taishin Inters\nk Taishin International Bank Taishin International Bank Taishin\nal Bank Taishin Internation\nishin International Bank\national Bank Taishin International Bank pohime\n帳號\nA/C NO\n支票號碼\nCHECK NO..\n期\nional Bank Taishin Intern\n230200100 tonal Bank ishin\nTT0746839\n年\n月\n日\n13 Day\nDATE 112 Year 03Month\ntional Bank Tall\national Bank Talshin\nthin\nBer\nnation\nnation\n驗 印\nin Intern\nTeishin\nnational Bank Tal\nInternational Bar\nsational Bank Taishin Intern\nnational Bank Talehin\nalshin International Bank Tal\nBank Tel\n經辦\nonal Ban\nernation\nBank Taishin Intern\nsational Bank Talshin\nIshin International Bank Tal\nTaishin International Ban\nBank Talehin Internation\nInternational nk Talehin Intern\ntional Bank Taishin Inter 覆核\nonal Bank\nTaishin\nBand Tal\nTaishin International Bar\nonal Bank Taishin Internation\nnational Bank Taishin Intern\nAUTHORIZED SIGNATURE Taishin International Bank Taishin\nTaishin International Bank Ta\n此致 To\n台照\n禁止背書轉讓\n台新國際商業銀行基隆路分行\n* fest\n⑈0746839⑈⑆018120735⑆04 ⑈230200100⑈")
+    result2 = extract_amount("Bank\nRukong Bank Shih Kong Bank Shin Kong Bank Shin Kong Bank Shin Kong Bank Shin Kongank\n00277399999992\n帳\nKong Bank Shin Kong Bank Shin Kong Bank Shin 中華民國112年03月29日\n支票號碼 0498442\nn Ko\n08\n多市分\n驗印\nong Bank Shin Kong Bank Shin Kong Bank Shin Kong Bank Shin Kong Bank Shin Kong Bank\n憑票支付 數位發展部數位產業署\n行\nng Bank Shih Kong Bank\nKong Bank Shin Kong Bank Shin Kong Bank Shin Korzank\n光\n新台幣伍拾萬元整\nBank Shin\nNT$\nng Bank $500.000 Bank Shin Kong Bank Shin Kong Bank\nShin Konank\n會計\n此致\n新光金控\n|新光銀行 竹科分行 Kong Bank Shic\n臺灣新光商業銀行竹科分行\nMKng 付款行代號:08-103-0277\n科目:(借)本行支票\n付款地:新竹市光復路一段333號\nBank Shin Kong Bank S\n發理\n劉素萍\ntrong Bank\n主管\nnong Bank\n(貸)")
+    result3 = extract_amount('發票日:中華民國113年4月 10日\n郵政匯票\n匯票號碼:1176000916-9\n憑票支付數位發展部數位產業署\n新臺幣伍萬元整\n11760009169\nNT$\n$50.000.00\n備註:\n禁止背書轉讓\n兌款局戳記\n印\n一、本匯票可於各地郵局兌領。\n二、本匯票務請用掛號向窗口交寄。\n三、請查對匯款金額及抬頭是否相符,並請詳閱背面\n注意事項。\n四、本郵政匯票可由全國票據交換所交換。\n證\n欄\n113. 4. 10\n發票員蓋章\n米米米米米\n主管員蓋章\n匯款局郵戳\n002127\n⑈6000916⑈⑆017010011⑆41 * 700000000\"\n主管:\n257')
+    print(result2)
 
