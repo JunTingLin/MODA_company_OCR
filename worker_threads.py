@@ -12,7 +12,7 @@ from data_processing import (
     load_business_code_mapping, add_business_description_to_data,
     save_to_json, add_checkbox_status_to_data, add_qr_codes_links_to_data,
     generate_match_data, check_api_data, add_company_compare_result_to_data,
-    add_cid_to_data, group_by_cid
+    add_cid_to_data, group_by_cid, append_api_data_to_summary
 )
 
 import os
@@ -114,6 +114,7 @@ class WorkerThread(QThread):
             if self.summary:
                 self.updater.update_status("正在儲存摘要資料...")
                 summary_data = group_by_cid(self.output_json_path)
+                summary_data = append_api_data_to_summary(summary_data, self.api_data_output_json_path)
                 save_to_json(summary_data, self.summary_data_output_json_path)
 
             self.updater.update_status("正在檢查是否需要將 JSON 檔案移動到子資料夾...")

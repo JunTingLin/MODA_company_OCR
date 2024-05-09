@@ -183,6 +183,19 @@ def group_by_cid(input_json_path):
     # 將摘要字典轉換成列表並返回
     return summary
 
+def append_api_data_to_summary(summary, input_json_path):
+    if not os.path.exists(input_json_path):
+        return summary
+
+    with open(input_json_path, 'r', encoding='utf-8') as file:
+        api_data = json.load(file)
+
+    for key in summary.keys():
+        if key in api_data:
+            summary[key]['api'] = api_data[key]['api']
+
+    return summary
+
 
 if __name__ == "__main__":
     result = generate_match_data(r"C:\Users\junting\Desktop\ocr_result\27750379\output.json")
