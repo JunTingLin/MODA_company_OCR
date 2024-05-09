@@ -26,6 +26,7 @@
 # GUI/CMD 說明
 
 ## GUI 截圖
+![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/c84cb968-6e2d-4a57-b20e-60bc861c7cdb)
 
 
 ## 命令行參數
@@ -49,6 +50,54 @@ main 001.jpg 002.jpg -api -f -s -o ./path/12345678 -c 12345678 -e "Taiwan Techno
 ```
 
 # 各文件辨識資料
+
+## output.json
+
+| 代碼 | 檔案類型 | 輸出欄位 |
+| ---- | ------- | ------- |
+| 00   | 不明類別 | `code`, `filename`, `ocr_data`, `table` |
+| 01   | 基本資料表 | `code`, `filename`, `ocr_data`, `table`, `ocr_cid`, `company_name`, `boss_name`, `business_code` |
+| 02   | 納稅證明(401/403表) | `code`, `filename`, `ocr_data`, `table`, `ocr_cid`, `company_name`, `boss_name`, `date`, `stamp` |
+| 03   | 廠商聲明書 | `code`, `filename`, `ocr_data`, `table`, `ocr_cid` |
+| 04   | 支票 | `code`, `filename`, `ocr_data`, `table`, `name`, `bank1`, `bank2`, `money`, `date`, `serial` |
+| 05   | ISO27001 | `code`, `filename`, `ocr_data`, `table`, `company_name`, `compare`, `expiry_date` |
+| 06   | 報價單 | `code`, `filename`, `ocr_data`, `table`, `ocr_cid`, `company_name` |
+
+### 欄位說明
+
+| 欄位 | 說明 | 格式 |
+| ---- | ---- | ---- |
+| `code` | 檔案類別代碼 | string |
+| `filename` | 檔案名稱 | array (跨頁檔案將有多個檔案名稱) |
+| `ocr_data` | OCR辨識結果 | string |
+| `table` | 資料類別中文全名 | string |
+| `ocr_cid` | 公司統編(-c) | string |
+| `company_name` | 公司名稱(ocr) | string |
+| `boss_name` | 負責人名稱(ocr) | string |
+| `business_code` | 營業項目(ocr) | string (逗點分隔) |
+| `date` | 支票日期(ocr) | string |
+| `stamp` | 營業稅網路申報收件章 | boolean |
+| `name` | 支票抬頭(ocr) | string |
+| `bank1` | 支票銀行(ocr) | string |
+| `bank2` | 支票銀行分行(ocr) | string |
+| `money` | 支票金額(ocr) | string (阿拉伯數字) |
+| `serial` | 支票號碼(ocr) | string |
+| `compare` | 與輸入對比結果(-e) | boolean |
+| `expiry_date` | ISO27001到期日(ocr) | string |
+
+## api_data.json
+
+| 欄位 | 說明 | 格式 |
+| ---- | ---- | ---- |
+| `ocr_cid` | 公司統編(-c) | string |
+| `company_name` | 同一家公司名辨識集合(set) | array |
+| `boss_name` | 同一家負責人名辨識集合(set) | array |
+| `allMatch` | 同一家公司辨識是否一致 | boolean |
+| `api` | gcis-api | array |
+
+## summary.json
+
+將上述兩個檔案整理，計算各類別數量，並將結果輸出。
 
 
 
