@@ -132,6 +132,26 @@ class WorkerThread(QThread):
             print(str(e))
             # 在這裡可以發射一個新的信號來處理這個特定的錯誤情況
 
+if __name__ == "__main__":
+    from progress_updater import CommandLineUpdater
+
+    worker = WorkerThread(
+        ["C:\\Users\\junting\\Desktop\\ocr_data\\1130201_part1\\全_150_25124859_笛雅科技股份有限公司\\191109_數位發展部數位產業署.pdf"],
+        "C:\\Users\\junting\\Desktop\\ocr_result",
+        updater = CommandLineUpdater(),
+        unified_number = "25124859",
+        archive = True,
+        call_api = True,
+        rename_files = True,
+        summary = True,
+        company_name_en = ""
+
+        )
+    # 啟動 worker thread
+    worker.start()
+    # 等待 worker thread 完成
+    worker.wait()
+
         
     
         

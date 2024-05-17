@@ -33,10 +33,14 @@ def move_json_files_to_subfolder(folder_path, json_paths):
                 shutil.move(json_path, subfolder_path)
 
 def copy_and_replace(work_dir, output_dir):
-    # 確保工作目錄和輸出目錄存在
-    if not os.path.exists(work_dir) or not os.path.exists(output_dir):
-        print("One of the directories does not exist.")
+    # 確保工作目錄存在
+    if not os.path.exists(work_dir):
+        print("Working directory does not exist.")
         return
+    
+    # 檢查輸出目錄是否存在，如果不存在則創建
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     
     # 遍歷工作目錄中的所有檔案和資料夾
     for item in os.listdir(work_dir):
@@ -270,6 +274,7 @@ def process_data_from_json(ocr_json, updater=None):
                 next_entry = data[index + 1]
                 combined_text += next_entry["ocr_data"] + '\n'
                 filenames.extend(next_entry["filename"])
+                filenames.reverse()
                 skip_next = True
                 extracted_info = extract_info(combined_text, filenames)
                 processed_data.append(extracted_info)

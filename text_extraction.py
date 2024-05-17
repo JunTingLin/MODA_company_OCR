@@ -96,19 +96,19 @@ def extract_unified_number(text):
 
 def extract_company_name(text):
     company_name_pattern = r"[^\w]*(.*?公司)\b"  # 以「公司」结尾的字符串
-    company_name_match = re.search(company_name_pattern, text)
-    if company_name_match:
-        company_name = company_name_match.group(1).strip()
+    matches = re.finditer(company_name_pattern, text)
+    for match in matches:
+        company_name = match.group(1).strip()
         company_name = company_name\
             .replace("營業名稱", "")\
             .replace("營業人名稱", "")\
             .replace("營業人名 稱", "")\
-            .replace("廠商名稱","")\
-            .replace(":","")\
+            .replace("廠商名稱", "")\
+            .replace(":", "")\
             .strip()
-        return company_name
-    else:
-        return 'Not match'
+        if company_name != "有限公司":  # 检查公司名是否只是「有限公司」
+            return company_name
+    return 'Not match'
     
 import re
 
@@ -136,6 +136,8 @@ def extract_representative_person_name(text):
     responsible_person_pattern_1 = r"\n(.+?)\n(?:新北|臺北|桃園|臺中|臺南|高雄|基隆|新竹|嘉義|苗栗|彰化|南投|雲林|屏東|宜蘭|花蓮|臺東|澎湖|金門|連江)" # 以縣市名稱結尾的字符串
     # 第二種正則表達式：匹配「代表人姓名\n」後的姓名
     responsible_person_pattern_2 = r"代表人姓名\n(.+?)\n"
+    # 第三種正則表達式：匹配被\n包覆的兩個或三個漢字
+    responsible_person_pattern_3 = r"\n([\u4e00-\u9fa5]{2,3})\n"
 
     # 嘗試使用第一種正則表達式
     responsible_person_match = re.search(responsible_person_pattern_1, text)
@@ -144,6 +146,11 @@ def extract_representative_person_name(text):
 
     # 如果第一種正則表達式無效，嘗試第二種
     responsible_person_match = re.search(responsible_person_pattern_2, text)
+    if responsible_person_match and is_valid_name(responsible_person_match.group(1).strip()):
+        return responsible_person_match.group(1).strip()
+    
+    # 如果第二種正則表達式無效，嘗試第三種
+    responsible_person_match = re.search(responsible_person_pattern_3, text)
     if responsible_person_match and is_valid_name(responsible_person_match.group(1).strip()):
         return responsible_person_match.group(1).strip()
 
@@ -330,8 +337,9 @@ def extract_27001_valid_date(text):
 
 
 if __name__ == "__main__":
-    result1 = extract_amount("Bar\nation\n本行支票\nal Ba\nerno\nshin 10\nak Tais\nal Bank\national\nntern\nshin\nak Tag\nal Bay\nationa\nntern\nshin I\nk Tais\nBanke\nona\nnational Bank Talshin International Bank\nInternational Bank Taishin International\naishin International Bank Taishin Interna\nank Taishin International Bank Taishin i\nPal Bank Taishin International Bank Talehi\n支\nnationa\nS\n示\nional Bank Taishin International Bank\nrnational Bank Talshin International\nnternational Bank Taishin Interna\nhin International Bank\nOk Tairin Internatio\nnal Bar Taish 票\n支付\nnation PAY TO THE ORDER OF.\nnterne\nshin Iternational\nTan Intern\n數位發展部數位產業署\n幣\nBa\nBNEW TAIWAN DOLLARS.\nation\nternational Bank\nhin\nhal Ban\nnation\nnterna\nNT$ 500,000\n伍拾萬元整\n台新國際商業銀行\nShunt Taighin International Bank BAR\nk -\nal Bank\national Ba\nDal Bank Tais\nVernational Bank Taishin International Bank Tals\nin International Bank Taishin International Bank\nnternationak Taishin International Bank Taishin Internation\nshin International Bank Taishin International Bank Taishin Inters\nk Taishin International Bank Taishin International Bank Taishin\nal Bank Taishin Internation\nishin International Bank\national Bank Taishin International Bank pohime\n帳號\nA/C NO\n支票號碼\nCHECK NO..\n期\nional Bank Taishin Intern\n230200100 tonal Bank ishin\nTT0746839\n年\n月\n日\n13 Day\nDATE 112 Year 03Month\ntional Bank Tall\national Bank Talshin\nthin\nBer\nnation\nnation\n驗 印\nin Intern\nTeishin\nnational Bank Tal\nInternational Bar\nsational Bank Taishin Intern\nnational Bank Talehin\nalshin International Bank Tal\nBank Tel\n經辦\nonal Ban\nernation\nBank Taishin Intern\nsational Bank Talshin\nIshin International Bank Tal\nTaishin International Ban\nBank Talehin Internation\nInternational nk Talehin Intern\ntional Bank Taishin Inter 覆核\nonal Bank\nTaishin\nBand Tal\nTaishin International Bar\nonal Bank Taishin Internation\nnational Bank Taishin Intern\nAUTHORIZED SIGNATURE Taishin International Bank Taishin\nTaishin International Bank Ta\n此致 To\n台照\n禁止背書轉讓\n台新國際商業銀行基隆路分行\n* fest\n⑈0746839⑈⑆018120735⑆04 ⑈230200100⑈")
-    result2 = extract_amount("Bank\nRukong Bank Shih Kong Bank Shin Kong Bank Shin Kong Bank Shin Kong Bank Shin Kongank\n00277399999992\n帳\nKong Bank Shin Kong Bank Shin Kong Bank Shin 中華民國112年03月29日\n支票號碼 0498442\nn Ko\n08\n多市分\n驗印\nong Bank Shin Kong Bank Shin Kong Bank Shin Kong Bank Shin Kong Bank Shin Kong Bank\n憑票支付 數位發展部數位產業署\n行\nng Bank Shih Kong Bank\nKong Bank Shin Kong Bank Shin Kong Bank Shin Korzank\n光\n新台幣伍拾萬元整\nBank Shin\nNT$\nng Bank $500.000 Bank Shin Kong Bank Shin Kong Bank\nShin Konank\n會計\n此致\n新光金控\n|新光銀行 竹科分行 Kong Bank Shic\n臺灣新光商業銀行竹科分行\nMKng 付款行代號:08-103-0277\n科目:(借)本行支票\n付款地:新竹市光復路一段333號\nBank Shin Kong Bank S\n發理\n劉素萍\ntrong Bank\n主管\nnong Bank\n(貸)")
-    result3 = extract_amount('發票日:中華民國113年4月 10日\n郵政匯票\n匯票號碼:1176000916-9\n憑票支付數位發展部數位產業署\n新臺幣伍萬元整\n11760009169\nNT$\n$50.000.00\n備註:\n禁止背書轉讓\n兌款局戳記\n印\n一、本匯票可於各地郵局兌領。\n二、本匯票務請用掛號向窗口交寄。\n三、請查對匯款金額及抬頭是否相符,並請詳閱背面\n注意事項。\n四、本郵政匯票可由全國票據交換所交換。\n證\n欄\n113. 4. 10\n發票員蓋章\n米米米米米\n主管員蓋章\n匯款局郵戳\n002127\n⑈6000916⑈⑆017010011⑆41 * 700000000\"\n主管:\n257')
-    print(result2)
+    raw_text = '商工登記公示資料查詢服務\n2024/4/12 上午9:58\n經濟部\n商工登記公示資料查詢服務\nLanguage\n公司基本資料 董監事資料 經理人資料 分公司資料 工廠資料\n跨域資料\n歷史資料\n自行揭露事項 法人董監網絡試用版\n● 列印此頁\nLine |複製連結\n還有匯析\n薑限股數\n公司基本資料\n简份智\n進南\n投標專用\n統一編號\n公司狀況\n53189636 |訂閱\n核准設立 「查詢最新營業狀況請至財政部稅務入口網」\n股權狀況\n僑外資\n公司名稱\n析數智匯股份有限公司 Google搜尋(出進口廠商英文名稱:Advant\nAnalytics Tactics Ltd.) 「國際貿易署廠商英文名稱查詢(限經營出進口\n或買賣業務者)」\n110年08月24日 發文號11052337910變更名稱(前名稱:台灣析數\n資訊股份有限公司)\n章程所訂外文公司名稱\nAdvant Analytics Tactics Ltd.\n資本總額(元)\n實收資本額(元)\n300,000,000\n195,546,550\n每股金額(元)\n10\n已發行股份總數(股)\n19,554,655\n代表人姓名\n謝進南\n公司所在地\n臺北市內湖區內湖路1段356號5樓 電子地圖\n登記機關\n核准設立日期\n最後核准變更日期\n複數表決權特別股\n臺北市政府\n099年11月02日\n112年08月30日\nhttps://findbiz.nat.gov.tw/fts/query/QueryCmpyDetail/queryCmpy Detail.do?objectId=SEM1MzE4OTYzNg==&banNo=53189636&disj=5DC86BED...\n1/3'
+    result = extract_company_name(raw_text)
+    print(result)
+    result = extract_info(raw_text, 'test.pdf')
+    print(result)
 
