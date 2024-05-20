@@ -274,14 +274,27 @@ def extract_amount(text):
     return 'Not match'
 
 def extract_check_date(text):
-    date_pattern = r"(\d{2,3}\s*年\s*\d{1,2}\s*月\s*\d{1,2}\s*日)"
-    date_match = re.search(date_pattern, text)
+    # 第一個正則表達式：匹配民國日期格式
+    date_pattern_1 = r"(\d{2,3}\s*年\s*\d{1,2}\s*月\s*\d{1,2}\s*日)"
+    date_match = re.search(date_pattern_1, text)
     
     if date_match:
         check_date = date_match.group(0)  # 獲取匹配的完整民國日期
         # 標準化日期，移除不必要的空格
         normalized_date = re.sub(r"\s+", "", check_date)
         return normalized_date
+    
+    # 第二個正則表達式：匹配英文日期格式
+    date_pattern_2 = r"(\d{2,3}\s*Year\s*\d{1,2}\s*Month\s*\d{1,2}\s*Day)"
+    date_match = re.search(date_pattern_2, text)
+    
+    if date_match:
+        check_date = date_match.group(0)  # 獲取匹配的完整英文日期
+        # 標準化日期，移除不必要的空格並替換英文詞彙以形成統一格式
+        normalized_date = re.sub(r"\s+", "", check_date)
+        normalized_date = (normalized_date.replace("Year", "年").replace("Month", "月").replace("Day", "日"))
+        return normalized_date
+    
     return 'Not match'
 
 def extract_serial(text):
@@ -337,8 +350,10 @@ def extract_27001_valid_date(text):
 
 
 if __name__ == "__main__":
-    raw_text = '商工登記公示資料查詢服務\n2024/4/12 上午9:58\n經濟部\n商工登記公示資料查詢服務\nLanguage\n公司基本資料 董監事資料 經理人資料 分公司資料 工廠資料\n跨域資料\n歷史資料\n自行揭露事項 法人董監網絡試用版\n● 列印此頁\nLine |複製連結\n還有匯析\n薑限股數\n公司基本資料\n简份智\n進南\n投標專用\n統一編號\n公司狀況\n53189636 |訂閱\n核准設立 「查詢最新營業狀況請至財政部稅務入口網」\n股權狀況\n僑外資\n公司名稱\n析數智匯股份有限公司 Google搜尋(出進口廠商英文名稱:Advant\nAnalytics Tactics Ltd.) 「國際貿易署廠商英文名稱查詢(限經營出進口\n或買賣業務者)」\n110年08月24日 發文號11052337910變更名稱(前名稱:台灣析數\n資訊股份有限公司)\n章程所訂外文公司名稱\nAdvant Analytics Tactics Ltd.\n資本總額(元)\n實收資本額(元)\n300,000,000\n195,546,550\n每股金額(元)\n10\n已發行股份總數(股)\n19,554,655\n代表人姓名\n謝進南\n公司所在地\n臺北市內湖區內湖路1段356號5樓 電子地圖\n登記機關\n核准設立日期\n最後核准變更日期\n複數表決權特別股\n臺北市政府\n099年11月02日\n112年08月30日\nhttps://findbiz.nat.gov.tw/fts/query/QueryCmpyDetail/queryCmpy Detail.do?objectId=SEM1MzE4OTYzNg==&banNo=53189636&disj=5DC86BED...\n1/3'
-    result = extract_company_name(raw_text)
+    raw_text = r'''
+    Bank\nSUNBANK & SUN BANK E SUN BANK SUN BANK ESUN BANK ESUN BANK SUN BANK ESUN BANK ESUN BANK ESUN BANK E SUN BA\nSUNBANK ESUN BANK ESUN BANK E SUN BANK ESUN BANK E.SUN BANK E.SUN BANK E.SUN BANK E.SUN BANK ESUN BANK ES\nAIRPGSUN-BAK E.SUN BANK E.SUN BANK E.SUN BANK ESUNBANK E.SUN BANK ESUN BANK E.SUNBANK E帳號:0314-436-000013.\nSUN BANK ESUN BANK E SUN BANK E.SUN BANK E.SUN BANK E.SUN BANK ESN BANK E.SUN BANK ESUNAIC NO\nUN BANK ESUN BANK ESUN BANK ESUN BANK ESUN BANK E.SUP\nANK ESUN BANK ESUN BANK E.SUN BANK ESUN BANK E.SI\n5.SUN BANK ESUN BANK ESUN BANK ESUN BANK ESI\nBANKESUN BANK SUN-BANK-ESUN BANK ES\nBANK ESUN BANK ESUN BANK E\nANK ESUN BANK ESUNNK ES\nGENBANK ESUN BANK E\nBAN\n(ESUNBA支票號碼 AD0498678\n票據\n71\n11\n地址:發票日民國112.03.21.\n119\nTRESUI DATE(Y-M-D)\n經辦\nSUN BANK SUN BANK\nSUN BANK CHECK No...\nBANK E.\n憑票支付\nPAY TO THE ORDER OF\n數位發展部數位產業署/\n伍拾萬元整\n新臺幣\nNEW TAIWAN DOLLARS.\nES\n會計 SUN\nNTS\n$500,000.00\n此致 玉山銀行 敦南分行 台照\nBAN SUN BANK\nSUNTO: SUE.SUN BANK\nSUN BANK E SUN BANK ESUN BANK ESU\nBAN\nSBANN\n付款地:台北市大安區敦化南路一段339號\n票付款行代號:01-808-0314\nCHECK 科目(借)本行支票\nBANK ESUN BANK E.SUN BANK\n對方科目\nANKE SUN BANK SUN BANK\nNBANK ESU\nBANK SUNANK\nNK\n禁止背書轉讓\n玉山商業銀行敦南分艟\n襄理 &\nUN BA SUN BANK ESUN BANK E.SUNE\nSUN BANK E SUN BANK ESUN BAN\nSUNBANK-ESUN BANK E SUN BANK ES\nBANK ESUN BANK ESUN BANK ESUNE\n2\n發票人簽章 AUTHORIZED SIGNATURE\nSUN BAN\nGBANK E.SUN BANK\nANK E SUN BANK ES\nE SUN BANK E.SU\nESUN\n核章\nSANG SUN\nANKE SUN BANK E SUN BAN\nSUN BANK E.SUN BANK\nSUN BANK E SUN BANK E\nIN BANK E SUN BANK ESU\nESUN BANK E.SUN\nE SUN BANK SUNBAN\nSUN BANK ESUN BANK\n⑈0498678⑈⑆018080314⑆04 ⑈436000013⑈
+    '''
+    result = extract_serial(raw_text)
     print(result)
     result = extract_info(raw_text, 'test.pdf')
     print(result)

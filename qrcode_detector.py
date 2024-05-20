@@ -16,16 +16,15 @@ def detect_qr_codes(image_path: str) -> List[str]:
         # 如果未檢測到任何 QR Code，返回空陣列
         return []
 
-    # 使用 set 去重，然後將結果轉為 list 返回
-    unique_links = list(set(decoded_info))
+    # 使用 set 去除重複元素，並移除空字串，然後將結果轉為 list 返回
+    unique_links = list(set([info for info in decoded_info if info]))
 
     # 返回解碼後的不重複 QR Code 連結陣列
     return unique_links
 
 
 if __name__ == '__main__':
-    image_path = r'C:\Users\junting\Desktop\ocr_data\quotation\2024-03-21-161819 - copy-black.jpg'
-    # image_path = r'C:\Users\junting\Desktop\ocr_data\data3(company)\SCAN-20231215154840_1-2_page_7.jpg'
+    image_path = r"C:\Users\junting\Desktop\ocr_result\97321598\97321598-06-001.png"
     qr_links = detect_qr_codes(image_path)
     print("QR Code Links:", qr_links)
     print(type(qr_links))
