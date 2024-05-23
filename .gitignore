@@ -5,7 +5,6 @@
 # distribution
 /dist
 service-account-file.json
-*.txt
 *.pdf
 *.json
 __pycache__/
@@ -15,4 +14,4 @@ __pycache__/
 *.spec
 /Tesseract-OCR
 ```
-.scannerwork/.sonar_lock
+.scannerwork
