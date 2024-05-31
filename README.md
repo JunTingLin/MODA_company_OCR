@@ -5,14 +5,14 @@
 
 [![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=JunTingLin_MODA_company_OCR)](https://sonarcloud.io/summary/new_code?id=JunTingLin_MODA_company_OCR)
 
-# 目錄
+## 目錄
 + [專案簡易說明](#專案簡易說明)
 + [GUI/CMD](#guicmd-說明)
 + [使用範例Demo](https://www.youtube.com/watch?v=_2ykBWYJUKA&ab_channel=%E6%9E%97%E4%BF%8A%E9%9C%86)
 + [Google key file 申請與配置](./doc/Cloud%20Vision%20API.md)
 + [程式碼品質檢測SonarQube](./doc/SonarQube.md)
 
-# 專案簡易說明
+## 專案簡易說明
 
 本程式旨在處理和分析包含「公司基本資料表」、「營業人銷售額與稅額申報書清單(401表)」、「營業人銷售額與稅額申報書(403表)」、「數位發展部數位產業署投標廠商聲明書」、「支票」、「ISO/IEC 27001證書」以及「投標報價單」多種格式的 PDF 文件和圖像檔案。
 
@@ -23,13 +23,13 @@
 4. 檔名自動命名:  檔名自動按照文件類別重命名。
 5. 數據核對：與商業司線上API進行資料核對，檢查本地提取的數據與官方資料庫中的記錄是否一致。
 
-# GUI/CMD 說明
+## GUI/CMD 說明
 
-## GUI 截圖
+### GUI 截圖
 ![image](https://github.com/JunTingLin/MODA_company_OCR/assets/92431095/c84cb968-6e2d-4a57-b20e-60bc861c7cdb)
 
 
-## 命令行參數
+### 命令行參數
 
 以下是本程式支援的命令行參數列表：
 
@@ -49,9 +49,9 @@
 main 001.jpg 002.jpg -api -f -s -o ./path/12345678 -c 12345678 -e "Taiwan Technology Inc."
 ```
 
-# 各文件辨識資料
+## 各文件辨識資料
 
-## output.json
+### output.json
 
 | 代碼 | 檔案類型 | 輸出欄位 |
 | ---- | ------- | ------- |
@@ -85,7 +85,7 @@ main 001.jpg 002.jpg -api -f -s -o ./path/12345678 -c 12345678 -e "Taiwan Techno
 | `compare` | 與輸入對比結果(-e) | boolean |
 | `expiry_date` | ISO27001到期日(ocr) | string |
 
-## api_data.json
+### api_data.json
 
 | 欄位 | 說明 | 格式 |
 | ---- | ---- | ---- |
@@ -95,9 +95,32 @@ main 001.jpg 002.jpg -api -f -s -o ./path/12345678 -c 12345678 -e "Taiwan Techno
 | `allMatch` | 同一家公司辨識是否一致 | boolean |
 | `api` | gcis-api | array |
 
-## summary.json
+### summary.json
 
 將上述兩個檔案整理，計算各類別數量，並將結果輸出。
+
+## 依賴
+
+本專案使用了以下主要依賴包：
+
+#### 圖片處理
+- **Pillow**: 用於圖片旋轉和處理，確保圖像處於正確的方向。
+- **opencv-python (opencv)**: 用於圖像處理和視覺相關任務，本專案中主要用於核取方塊勾選定位。
+- **PyMuPDF**: 處理PDF文件，將PDF頁面轉換成圖片，以便進行後續的圖像處理和OCR。
+
+#### OCR處理
+- **pytesseract**: Tesseract-OCR 的 Python 封裝，用於初步偵測圖像是否顛倒，協助進行圖像校正。
+- **google-cloud-vision**: Google 的雲端視覺識別服務，是本專案的主要OCR工具。
+
+#### GUI 開發
+- **PySide2**: 提供完整的 Qt5 框架封裝，用於構建用戶界面。
+
+#### 數據處理和網絡請求
+- **pandas**: 數據處裡和讀取CSV檔案。
+- **requests**: 處理 HTTP 請求的實用工具，用於與 API 交互。
+
+#### 安全和合規
+- **cyclonedx-py**: 用於生成軟件物料清單（SBOM）。
 
 
 
