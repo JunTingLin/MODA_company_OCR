@@ -122,6 +122,9 @@ main 001.jpg 002.jpg -api -f -s -o ./path/12345678 -c 12345678 -e "Taiwan Techno
 #### 安全和合規
 - **cyclonedx-py**: 用於生成軟件物料清單（SBOM）。
 
+#### 打包
+- **pyinstaller**: 生成可執行文件。
+
 
 
 
